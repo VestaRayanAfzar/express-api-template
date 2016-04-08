@@ -1,0 +1,3 @@
+[submodule "src/cmn"]
+	path = src/cmn
+	url = git@github.com:hbtb/commonCodeTemplate.git
