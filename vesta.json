@@ -4,17 +4,17 @@
         "api": "v1"
     },
     "config": {
-        "name": "expressCodeTemplate",
+        "name": "expressJsTemplate",
         "client": {},
         "server": {
             "type": "express",
             "database": "mysql"
         },
         "repository": {
-            "baseRepoUrl": "http://hbtb.ir:8080",
-            "group": "vesta",
-            "name": "expressCodeTemplate",
-            "common": "commonCodeTemplate"
+            "baseRepoUrl": "https://github.com",
+            "group": "hbtb",
+            "name": "expressJsTemplate",
+            "common": "commonJsTemplate"
         },
         "type": "serverSide",
         "endpoint": "http://localhost:3000"
