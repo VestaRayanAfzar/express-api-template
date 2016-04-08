@@ -1,0 +1,47 @@
+version: '2'
+
+services:
+
+  session-database:
+    image: redis
+    ports:
+      - '3100:6379'
+    volumes:
+      - ./resources/volumes/session-database:/data
+
+  app-database:
+    image: mysql
+    ports:
+      - '3200:3306'
+    volumes:
+      - ./resources/volumes/app-database:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: sampleDatabase
+
+  api-server:
+    image: node
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SDB_PROTOCOL: redis
+      SDB_HOST: session-database
+      SDB_PORT: 6379
+      ADB_PROTOCOL: mysql
+      ADB_HOST: app-database
+      ADB_PORT: 3306
+      ADB_USERNAME: root
+      ADB_PASSWORD:
+      ADB_NAME: sampleDatabase
+      SALT: '__SALT__'
+      SECRET_KEY: '__SECRET_KEY__'
+    depends_on:
+      - session-database
+      - app-database
+    volumes:
+      - .:/app
+    ports:
+      - '3000:3000'
+      - '3300:5858'
+    working_dir: /app
+    command: npm run serve

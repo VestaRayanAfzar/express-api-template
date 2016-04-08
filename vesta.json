@@ -1,0 +1,22 @@
+{
+    "version": {
+        "app": "0.1.0",
+        "api": "v1"
+    },
+    "config": {
+        "name": "expressCodeTemplate",
+        "client": {},
+        "server": {
+            "type": "express",
+            "database": "mysql"
+        },
+        "repository": {
+            "baseRepoUrl": "http://hbtb.ir:8080",
+            "group": "vesta",
+            "name": "expressCodeTemplate",
+            "common": "commonCodeTemplate"
+        },
+        "type": "serverSide",
+        "endpoint": "http://localhost:3000"
+    }
+}

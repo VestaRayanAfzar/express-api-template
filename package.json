@@ -1,0 +1,26 @@
+{
+  "name": "expressCodeTemplate",
+  "description": "Proveided by Vesta Rayan Afzar",
+  "version": "0.1.0",
+  "scripts": {
+    "serve": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "cors": "^2.7.1",
+    "express": "^4.13.4",
+    "formidable": "^1.0.17",
+    "jsonwebtoken": "^5.7.0",
+    "morgan": "^1.7.0",
+    "mysql": "^2.10.2",
+    "node-uuid": "^1.4.7",
+    "redis": "^2.5.3"
+  },
+  "devDependencies": {
+    "fs-extra": "^0.26.7",
+    "gulp": "^3.9.1",
+    "gulp-develop-server": "^0.5.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.12.0"
+  }
+}

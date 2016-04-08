@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+
+  session-database:
+    image: redis
+    restart: always
+    volumes:
+      - /data/expressCodeTemplate/session-database:/data
+
+  app-database:
+    image: mysql
+    restart: always
+    volumes:
+      - /data/expressCodeTemplate/app-database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: '__DB_ROOT_PASSWORD__'
+      MYSQL_DATABASE: sampleDatabase
+
+  api-server:
+    build: ./api
+    environment:
+      NODE_ENV: production
+      SDB_PROTOCOL: redis
+      SDB_HOST: session-database
+      SDB_PORT: 6379
+      ADB_PROTOCOL: mysql
+      ADB_HOST: app-database
+      ADB_PORT: 3306
+      ADB_USERNAME: root
+      ADB_PASSWORD: '__DB_ROOT_PASSWORD__'
+      ADB_NAME: sampleDatabase
+      SALT: '__SALT__'
+      SECRET_KEY: '__SECRET_KEY__'
+    depends_on:
+      - session-database
+      - app-database
+    ports:
+      - '3000:3001'
+    working_dir: /app
+    command: pm2 start app.js --no-daemon --name expressCodeTemplate
