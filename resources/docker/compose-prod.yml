@@ -6,21 +6,39 @@ services:
     image: redis
     restart: always
     volumes:
-      - /data/expressCodeTemplate/session-database:/data
+      - session-db-storage:/data
+    networks:
+      - back-tire
 
   app-database:
     image: mysql
     restart: always
     volumes:
-      - /data/expressCodeTemplate/app-database:/var/lib/mysql
+      - app-db-storage:/var/lib/mysql
+    networks:
+      - back-tire
     environment:
-      MYSQL_ROOT_PASSWORD: '__DB_ROOT_PASSWORD__'
-      MYSQL_DATABASE: sampleDatabase
+      MYSQL_ROOT_PASSWORD: 'XzwK}kM#'
+      MYSQL_DATABASE: expressJsTemplate
 
   api-server:
     build: ./api
+    restart: always
+    ports:
+      - '3000:3000'
+#    expose:
+#      - '3000'
+    volumes:
+      - ./api/src:/app
+      - app-storage:/upload
+    networks:
+      - front-tire
+      - back-tire
+    working_dir: /app
+    command: pm2 start app.js --no-daemon
     environment:
       NODE_ENV: production
+      PORT: 3000
       SDB_PROTOCOL: redis
       SDB_HOST: session-database
       SDB_PORT: 6379
@@ -28,14 +46,46 @@ services:
       ADB_HOST: app-database
       ADB_PORT: 3306
       ADB_USERNAME: root
-      ADB_PASSWORD: '__DB_ROOT_PASSWORD__'
-      ADB_NAME: sampleDatabase
-      SALT: '__SALT__'
-      SECRET_KEY: '__SECRET_KEY__'
+      ADB_PASSWORD: 'XzwK}kM#'
+      ADB_NAME: expressJsTemplate
+      MAIL_HOST: 'mail.chetore.com'
+      MAIL_PORT: 465
+      MAIL_USER: 'support@chetore.com'
+      MAIL_PASSWORD: '6FTiDfZVZ'
+      MAIL_SENDER: 'support@chetore.com'
+      MAIL_SUPPORT: 'admin@chetore.com'
+      MAIL_BACKUP: 'sent@chetore.com'
+      MAIL_SECURE: 1
+      MAIL_POOL: 1
+      SALT: 'MT[;(W8T2l?eQZRMVh0%q%Z}'
+      SECRET_KEY: 'zO463At!<HLVHR@[Sc5/KF--O5oScgdCZ,F<(?WnFi;U0)^Usy7WnK?H4,}FPWGP'
     depends_on:
       - session-database
       - app-database
+
+  dispatcher:
+    image: nginx
+    restart: always
     ports:
-      - '3000:3001'
-    working_dir: /app
-    command: pm2 start app.js --no-daemon --name expressCodeTemplate
+      - '8080:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl
+      - app-storage:/upload
+    networks:
+      - front-tire
+    environment:
+      API_SERVER_PORT: 3000
+      API_SERVER_HOST: 192.168.99.100
+    depends_on:
+      - api-server
+
+volumes:
+  session-db-storage:
+  app-db-storage:
+  app-storage:
+
+networks:
+  front-tire:
+  back-tire:

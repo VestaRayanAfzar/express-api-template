@@ -12,7 +12,7 @@ var dir = {
     build: path.join(root, 'build')
 };
 
-var modules = ['server'],
+var modules = ['server', 'staticServer'],
     tasks = [],
     watches = [],
     setting = {

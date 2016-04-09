@@ -1,11 +1,8 @@
 export interface IVariantServerAppSetting {
-    dir: {upload: string;};
-    regenerateSchema: boolean;
+    regenerateSchema:boolean;
 }
 
 export var VariantSetting:IVariantServerAppSetting = {
-    dir: {
-        upload: '/app/build/upload',
-    },
+    // This will cause the database driver to regenerate all tables from beginning. All data will be lost
     regenerateSchema: true
 };

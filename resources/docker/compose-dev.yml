@@ -7,20 +7,35 @@ services:
     ports:
       - '3100:6379'
     volumes:
-      - ./resources/volumes/session-database:/data
+      - session-db-storage:/data
+    networks:
+      - back-tire
 
   app-database:
     image: mysql
     ports:
       - '3200:3306'
     volumes:
-      - ./resources/volumes/app-database:/var/lib/mysql
+      - app-db-storage:/var/lib/mysql
+    networks:
+      - back-tire
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-      MYSQL_DATABASE: sampleDatabase
+      MYSQL_DATABASE: expressJsTemplate
 
   api-server:
     image: node
+    ports:
+      - '3000:3000'
+      - '3300:5858'
+    volumes:
+      - .:/app
+      - app-storage:/upload
+    networks:
+      - back-tire
+      - front-tire
+    working_dir: /app
+    command: npm run serve
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -32,16 +47,36 @@ services:
       ADB_PORT: 3306
       ADB_USERNAME: root
       ADB_PASSWORD:
-      ADB_NAME: sampleDatabase
+      ADB_NAME: expressJsTemplate
       SALT: '__SALT__'
       SECRET_KEY: '__SECRET_KEY__'
     depends_on:
       - session-database
       - app-database
+
+  static-server:
+    image: node
     volumes:
       - .:/app
+      - app-storage:/upload
+#    networks:
+#      - front-tire
     ports:
-      - '3000:3000'
-      - '3300:5858'
+      - '3400:3000'
+      - '3500:5858'
     working_dir: /app
-    command: npm run serve
+    command: npm run serve-static
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+    depends_on:
+      - api-server
+
+volumes:
+  session-db-storage:
+  app-db-storage:
+  app-storage:
+
+networks:
+  front-tire:
+  back-tire:

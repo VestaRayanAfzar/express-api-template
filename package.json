@@ -3,7 +3,8 @@
   "description": "Proveided by Vesta Rayan Afzar",
   "version": "0.1.0",
   "scripts": {
-    "serve": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js"
+    "serve": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js",
+    "serve-static": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js static"
   },
   "dependencies": {
     "body-parser": "^1.15.0",

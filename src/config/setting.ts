@@ -8,6 +8,7 @@ export interface IServerAppSetting extends IVariantServerAppSetting {
     version:{app:string; api:string};
     database:IDatabaseConfig;
     port:number;
+    dir:{upload:string};
     security:{
         secret:string;
         salt:string;
@@ -34,7 +35,9 @@ export const setting:IServerAppSetting = {
         password: env.ADB_PASSWORD,
         database: env.ADB_NAME
     },
-    dir: VariantSetting.dir,
+    dir: {
+        upload: '/upload'
+    },
     regenerateSchema: VariantSetting.regenerateSchema,
     port: env.PORT,
     security: {

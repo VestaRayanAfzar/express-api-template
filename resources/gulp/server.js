@@ -6,11 +6,13 @@ var gulp = require('gulp'),
 
 module.exports = function (dir, setting) {
 
-    gulp.task('server:ts', function () {
         try {
-            if (setting.production) fse.removeSync(dir.build);
+        fse.removeSync(dir.build);
         } catch (e) {
+        console.log('Unable to delete build directory');
         }
+
+    gulp.task('server:ts', function () {
         var tsFiles = [dir.src + '/**/*.ts'].concat(setting.production ? [] : [dir.typescriptLibrary + '/**/*.ts']),
             containerPath = dir.build + (setting.production ? '/src' : ''),
             genSourceMap = !setting.production,

@@ -1,22 +1,22 @@
 {
-    "version": {
-        "app": "0.1.0",
-        "api": "v1"
+  "version": {
+    "app": "0.1.0",
+    "api": "v1"
+  },
+  "config": {
+    "name": "expressJsTemplate",
+    "client": {},
+    "server": {
+      "type": "express",
+      "database": "mysql"
     },
-    "config": {
-        "name": "expressJsTemplate",
-        "client": {},
-        "server": {
-            "type": "express",
-            "database": "mysql"
-        },
-        "repository": {
-            "baseRepoUrl": "https://github.com",
-            "group": "hbtb",
-            "name": "expressJsTemplate",
-            "common": "commonJsTemplate"
-        },
-        "type": "serverSide",
-        "endpoint": "http://localhost:3000"
-    }
+    "repository": {
+      "baseRepoUrl": "https://github.com",
+      "group": "hbtb",
+      "name": "expressJsTemplate",
+      "common": "commonJsTemplate"
+    },
+    "type": "serverSide",
+    "endpoint": "http://localhost:3000"
+  }
 }
