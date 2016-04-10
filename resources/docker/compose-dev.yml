@@ -59,8 +59,6 @@ services:
     volumes:
       - .:/app
       - app-storage:/upload
-#    networks:
-#      - front-tire
     ports:
       - '3400:3000'
       - '3500:5858'

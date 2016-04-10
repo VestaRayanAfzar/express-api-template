@@ -26,8 +26,6 @@ services:
     restart: always
     ports:
       - '3000:3000'
-#    expose:
-#      - '3000'
     volumes:
       - ./api/src:/app
       - app-storage:/upload
@@ -48,15 +46,6 @@ services:
       ADB_USERNAME: root
       ADB_PASSWORD: 'XzwK}kM#'
       ADB_NAME: expressJsTemplate
-      MAIL_HOST: 'mail.chetore.com'
-      MAIL_PORT: 465
-      MAIL_USER: 'support@chetore.com'
-      MAIL_PASSWORD: '6FTiDfZVZ'
-      MAIL_SENDER: 'support@chetore.com'
-      MAIL_SUPPORT: 'admin@chetore.com'
-      MAIL_BACKUP: 'sent@chetore.com'
-      MAIL_SECURE: 1
-      MAIL_POOL: 1
       SALT: 'MT[;(W8T2l?eQZRMVh0%q%Z}'
       SECRET_KEY: 'zO463At!<HLVHR@[Sc5/KF--O5oScgdCZ,F<(?WnFi;U0)^Usy7WnK?H4,}FPWGP'
     depends_on:
