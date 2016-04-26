@@ -81,7 +81,7 @@ export class ServerApp {
         DatabaseFactory.getInstance(this.setting.security.session.database)
             .then(connection=> {
                 this.sessionDatabase = connection;
-                return DatabaseFactory.getInstance(this.setting.database);
+                return DatabaseFactory.getInstance(this.setting.database, this.setting.regenerateSchema);
             })
             .then(connection=> {
                 this.database = connection;

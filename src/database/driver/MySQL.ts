@@ -12,9 +12,11 @@ import {Field, IFieldProperties, FieldType, Relationship} from "../../cmn/Field"
 export class MySQL extends Database {
     private static pool:IPool;
     private static staticInstance:IConnection;
+    private static regenerateSchema:boolean = false;
 
-    public static getInstance(config:IDatabaseConfig):Promise<Database> {
+    public static getInstance(config:IDatabaseConfig, regenerateSchema:boolean = false):Promise<Database> {
         if (MySQL.staticInstance) return Promise.resolve(new MySQL(MySQL.staticInstance));
+        MySQL.regenerateSchema = regenerateSchema;
         return new Promise<Database>((resolve, reject)=> {
             if (!MySQL.pool) {
                 MySQL.pool = mysql.createPool(<IConnectionConfig>{
@@ -28,7 +30,7 @@ export class MySQL extends Database {
             MySQL.pool.getConnection((err, connection)=> {
                 if (err) return reject(new DatabaseError(Err.Code.DBConnection, err.message));
                 MySQL.staticInstance = connection;
-                var result:Promise<boolean> = true ? MySQL.initializeDatabase(config, connection) : Promise.resolve<boolean>();
+                var result:Promise<boolean> =  MySQL.regenerateSchema ? MySQL.initializeDatabase(config, connection) : Promise.resolve<boolean>();
                 result.then(()=> {
                     resolve(new MySQL(MySQL.staticInstance));
                 })
@@ -75,8 +77,10 @@ export class MySQL extends Database {
 
     public init(schemaList:Array<Schema>):Promise<boolean> {
         var createSchemaPromise = Promise.resolve();
-        for (var i = 0; i < schemaList.length; i++) {
-            createSchemaPromise = createSchemaPromise.then(this.createTable(schemaList[i]));
+        if ( MySQL.regenerateSchema) {
+            for (var i = 0; i < schemaList.length; i++) {
+                createSchemaPromise = createSchemaPromise.then(this.createTable(schemaList[i]));
+            }
         }
         return createSchemaPromise;
     }
@@ -84,7 +88,7 @@ export class MySQL extends Database {
 
     private createTable(schema:Schema) {
         var fields = schema.getFields();
-        var createDefinition = this.createDefinition(fields,schema.name);
+        var createDefinition = this.createDefinition(fields, schema.name);
         var ownTable = `CREATE TABLE IF NOT EXISTS ${schema.name} (\n${createDefinition.ownColumn})\n ENGINE=InnoDB DEFAULT CHARSET=utf8`;
         var ownTablePromise = new Promise((resolve, reject)=> {
             MySQL.staticInstance.query(ownTable, (err, result)=> {
@@ -111,7 +115,7 @@ export class MySQL extends Database {
 
     }
 
-    private relationTable(field:Field,table:string):Promise<boolean> {
+    private relationTable(field:Field, table:string):Promise<boolean> {
         var schema = new Schema(table + 'Has' + this.pascalCase(field.fieldName));
         schema.addField('id').primary().required();
         schema.addField(this.camelCase(table)).type(FieldType.Integer).required();
@@ -119,15 +123,15 @@ export class MySQL extends Database {
         return this.createTable(schema)();
     }
 
-    private camelCase(str){
+    private camelCase(str) {
         return str[0].toLowerCase() + str.slice(1, str.length - 1)
     }
 
-    private pascalCase(str){
+    private pascalCase(str) {
         return str[0].toUpperCase() + str.slice(1, str.length - 1)
     }
 
-    private createDefinition(fields:IModelFields,table:string, checkMultiLingual = true) {
+    private createDefinition(fields:IModelFields, table:string, checkMultiLingual = true) {
         var multiLingualDefinition:Array<String> = [];
         var columnDefinition:Array<String> = [];
         var relations:Array<Promise<boolean>> = [];
@@ -143,7 +147,7 @@ export class MySQL extends Database {
                         columnDefinition.push(column);
                     }
                 } else if (fields[field].properties.type == FieldType.Relation && fields[field].properties.relation.type == Relationship.Type.Many2Many) {
-                    relations.push(this.relationTable(fields[field],table));
+                    relations.push(this.relationTable(fields[field], table));
                 }
             }
         }
