@@ -37,7 +37,7 @@ export class Mongodb extends Database {
         return undefined;
     }
 
-    init(schema:Schema) {
+    init(schemaList:Array<Schema>) {
         return undefined;
     }
 
