@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+
+  session:
+    image: redis
+    ports:
+      - '9010:6379'
+    volumes:
+      - session-db-storage:/data
+    networks:
+      - network
+
+  database:
+    image: mysql
+    ports:
+      - '9011:3306'
+    volumes:
+      - app-db-storage:/var/lib/mysql
+    networks:
+      - network
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: impApiServer
+
+  api:
+    image: node
+    ports:
+      - '9012:3000'
+      - '9013:5858'
+    volumes:
+      - .:/app
+      - app-storage:/upload
+    networks:
+      - network
+    working_dir: /app
+    command: npm run serve
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SDB_PROTOCOL: redis
+      SDB_HOST: session
+      SDB_PORT: 6379
+      ADB_PROTOCOL: mysql
+      ADB_HOST: database
+      ADB_PORT: 3306
+      ADB_USERNAME: root
+      ADB_PASSWORD:
+      ADB_NAME: impApiServer
+      SALT: 'GlC<z3t&6n-5v9321##N0{7['
+      SECRET_KEY: 'mS^Mus}3TTr,kZZd%?wRFk1n@%CEX.Z>T>5A:Mfe@wsDOpeX:9E^u(Af?6/pq}Sy'
+    depends_on:
+      - session
+      - database
+
+volumes:
+  session-db-storage:
+  app-db-storage:
+  app-storage:
+
+networks:
+  network:

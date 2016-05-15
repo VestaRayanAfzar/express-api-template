@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
-    path = require('path');
+    path = require('path'),
+    fse = require('fs-extra');
 
 var root = __dirname;
 var dir = {
@@ -9,10 +10,11 @@ var dir = {
     gulp: path.join(root, 'resources/gulp'),
     typescriptLibrary: path.join('resources/tsd'),
     src: path.join(root, 'src'),
-    build: path.join(root, 'build')
+    build: path.join(root, 'build'),
+    buildServer: path.join(root, 'build/app/api')
 };
 
-var modules = ['server', 'staticServer'],
+var modules = ['ts'],
     tasks = [],
     watches = [],
     setting = {
@@ -29,10 +31,17 @@ for (var i = 0, il = modules.length; i < il; ++i) {
     }
 }
 
-gulp.task('production', function (done) {
-    setting.production = true;
-    done();
+gulp.task('init', function () {
+    try {
+        fse.removeSync(dir.build);
+    } catch (e) {
+        console.log('Unable to delete build directory');
+    }
 });
 
-gulp.task('default', tasks.concat(watches));
-gulp.task('prod', ['production'].concat(tasks));
+gulp.task('production', function () {
+    setting.production = true;
+});
+
+gulp.task('default', ['init'].concat(tasks.concat(watches)));
+gulp.task('deploy', ['init', 'production'].concat(tasks));

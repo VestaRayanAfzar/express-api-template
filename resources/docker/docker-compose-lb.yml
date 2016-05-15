@@ -1,0 +1,59 @@
+version: '2'
+
+services:
+
+  session:
+    image: redis
+    restart: always
+    volumes:
+      - session:/data
+    networks:
+      - network
+
+  database:
+    image: mysql
+    restart: always
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - network
+    environment:
+      MYSQL_ROOT_PASSWORD: 'XzwK}kM#'
+      MYSQL_DATABASE: impApiServer
+
+  api:
+    build: ./app
+    restart: always
+    expose:
+      - 3000
+    volumes:
+      - storage:/upload
+    networks:
+      - network
+    working_dir: /app
+    command: pm2 start api/app.js --no-daemon
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      SDB_PROTOCOL: redis
+      SDB_HOST: session
+      SDB_PORT: 6379
+      ADB_PROTOCOL: mysql
+      ADB_HOST: database
+      ADB_PORT: 3306
+      ADB_USERNAME: root
+      ADB_PASSWORD: 'XzwK}kM#'
+      ADB_NAME: impApiServer
+      SALT: 'MT[;(W8T2l?eQZRMVh0%q%Z}'
+      SECRET_KEY: 'zO463At!<HLVHR@[Sc5/KF--O5oScgdCZ,F<(?WnFi;U0)^Usy7WnK?H4,}FPWGP'
+    depends_on:
+      - session
+      - database
+
+volumes:
+  session:
+  database:
+  storage:
+
+networks:
+  network:

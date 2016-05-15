@@ -1,9 +1,9 @@
 .idea
 npm-debug*
 tsd-debug*
-/docker-compose.yml
 /build
 /node_modules
-/resources/tsd
+/resources/data
 /resources/volumes
+/resources/tsd
 /src/config/setting.var.ts
