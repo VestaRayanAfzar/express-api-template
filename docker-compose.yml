@@ -5,7 +5,7 @@ services:
   session:
     image: redis
     ports:
-      - '9010:6379'
+      - '9001:6379'
     volumes:
       - session-db-storage:/data
     networks:
@@ -14,20 +14,20 @@ services:
   database:
     image: mysql
     ports:
-      - '9011:3306'
+      - '9002:3306'
     volumes:
       - app-db-storage:/var/lib/mysql
     networks:
       - network
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-      MYSQL_DATABASE: impApiServer
+      MYSQL_DATABASE: expressJsTemplate
 
   api:
     image: node
     ports:
-      - '9012:3000'
-      - '9013:5858'
+      - '9003:3000'
+      - '9004:5858'
     volumes:
       - .:/app
       - app-storage:/upload
@@ -46,9 +46,9 @@ services:
       ADB_PORT: 3306
       ADB_USERNAME: root
       ADB_PASSWORD:
-      ADB_NAME: impApiServer
-      SALT: 'GlC<z3t&6n-5v9321##N0{7['
-      SECRET_KEY: 'mS^Mus}3TTr,kZZd%?wRFk1n@%CEX.Z>T>5A:Mfe@wsDOpeX:9E^u(Af?6/pq}Sy'
+      ADB_NAME: expressJsTemplate
+      SALT: '__SALT__'
+      SECRET_KEY: '__SECRET_KEY__'
     depends_on:
       - session
       - database

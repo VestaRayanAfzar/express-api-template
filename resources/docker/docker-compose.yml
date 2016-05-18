@@ -18,7 +18,7 @@ services:
     networks:
       - network
     environment:
-      MYSQL_ROOT_PASSWORD: 'XzwK}kM#'
+      MYSQL_ROOT_PASSWORD: '__DB_PASSWORD__'
       MYSQL_DATABASE: expressJsTemplate
 
   api:
@@ -43,10 +43,10 @@ services:
       ADB_HOST: database
       ADB_PORT: 3306
       ADB_USERNAME: root
-      ADB_PASSWORD: 'XzwK}kM#'
+      ADB_PASSWORD: '__DB_PASSWORD__'
       ADB_NAME: expressJsTemplate
-      SALT: 'MT[;(W8T2l?eQZRMVh0%q%Z}'
-      SECRET_KEY: 'zO463At!<HLVHR@[Sc5/KF--O5oScgdCZ,F<(?WnFi;U0)^Usy7WnK?H4,}FPWGP'
+      SALT: '__SALT__'
+      SECRET_KEY: '__SECRET_KEY__'
     depends_on:
       - session
       - database
