@@ -11,7 +11,7 @@ var dir = {
     typescriptLibrary: path.join('resources/tsd'),
     src: path.join(root, 'src'),
     build: path.join(root, 'build'),
-    buildServer: path.join(root, 'build/app/api')
+    buildServer: path.join(root, 'build/app')
 };
 
 var modules = ['ts'],

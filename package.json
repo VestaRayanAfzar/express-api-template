@@ -1,21 +1,21 @@
 {
   "name": "expressJsTemplate",
   "description": "Proveided by Vesta Rayan Afzar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
-    "serve": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js",
-    "serve-static": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js static"
+    "serve": "node node_modules/gulp/bin/gulp --gulpfile resources/gulp/run.js"
   },
   "dependencies": {
     "body-parser": "^1.15.0",
     "cors": "^2.7.1",
     "express": "^4.13.4",
     "formidable": "^1.0.17",
+    "json2xls": "^0.1.1",
     "jsonwebtoken": "^5.7.0",
+    "mkdirp": "^0.5.1",
     "morgan": "^1.7.0",
     "mysql": "^2.10.2",
-    "node-uuid": "^1.4.7",
-    "redis": "^2.5.3"
+    "node-uuid": "^1.4.7"
   },
   "devDependencies": {
     "fs-extra": "^0.26.7",

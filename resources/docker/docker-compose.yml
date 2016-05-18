@@ -19,19 +19,20 @@ services:
       - network
     environment:
       MYSQL_ROOT_PASSWORD: 'XzwK}kM#'
-      MYSQL_DATABASE: impApiServer
+      MYSQL_DATABASE: expressJsTemplate
 
   api:
-    build: ./app
+    image: vesta/pm2
     restart: always
     expose:
       - 3000
     volumes:
+      - ./app:/app
       - storage:/upload
     networks:
       - network
     working_dir: /app
-    command: pm2 start api/app.js --no-daemon
+    command: pm2 start app.js --no-daemon
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -43,7 +44,7 @@ services:
       ADB_PORT: 3306
       ADB_USERNAME: root
       ADB_PASSWORD: 'XzwK}kM#'
-      ADB_NAME: impApiServer
+      ADB_NAME: expressJsTemplate
       SALT: 'MT[;(W8T2l?eQZRMVh0%q%Z}'
       SECRET_KEY: 'zO463At!<HLVHR@[Sc5/KF--O5oScgdCZ,F<(?WnFi;U0)^Usy7WnK?H4,}FPWGP'
     depends_on:

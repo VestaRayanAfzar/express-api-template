@@ -2,7 +2,7 @@ var path = require('path'),
     gulp = require('gulp'),
     server = require('gulp-develop-server'),
     root = path.join(__dirname, '../..'),
-    serverDirectory = path.join(root, 'build/app/api');
+    serverDirectory = path.join(root, 'build/app');
 
 /**
  * Serving Api server and restarting automatically when changes occurred.
