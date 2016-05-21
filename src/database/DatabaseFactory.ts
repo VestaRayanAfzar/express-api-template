@@ -7,10 +7,10 @@ import {Err} from "../cmn/Err";
 
 export class DatabaseFactory {
 
-    public static getInstance(config:IDatabaseConfig,regenerateSchema?:boolean):Promise<Database> {
+    public static getInstance(config:IDatabaseConfig, regenerateSchema?:boolean):Promise<Database> {
         switch (config.protocol) {
             case Database.MySQL:
-                return MySQL.getInstance(config);
+                return MySQL.getInstance(config, regenerateSchema);
             case Database.Mongodb:
                 return Mongodb.getInstance(config);
             case Database.Redis:

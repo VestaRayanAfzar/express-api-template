@@ -9,6 +9,9 @@ import {sessionMiddleware} from "./middlewares/session";
 import {Err} from "./cmn/Err";
 import {IExtRequest} from "./api/BaseController";
 import {Database} from "./cmn/Database";
+import {Schema} from "./cmn/Schema";
+import * as fs from "fs";
+import {Model} from "./cmn/Model";
 var cors = require('cors');
 
 export class ServerApp {
@@ -79,17 +82,29 @@ export class ServerApp {
         DatabaseFactory.getInstance(this.setting.security.session.database)
             .then(connection=> {
                 this.sessionDatabase = connection;
-                return null;//DatabaseFactory.getInstance(this.setting.database);
+                return DatabaseFactory.getInstance(this.setting.database, this.setting.regenerateSchema);
             })
             .then(connection=> {
+                Model.setDatabese(connection);
                 this.database = connection;
-                this.afterDatabaseInstantiation();
+                this.database.init(this.getSchemaList()).then(()=>this.afterDatabaseInstantiation());
             })
             .catch(err=> {
                 console.error((this.sessionDatabase ? 'Main' : 'Session') + ` Database instantiation error: `, err);
                 process.exit(1);
             });
     }
+
+    private getSchemaList():Array<Schema> {
+        var modelFiles = fs.readdirSync(__dirname + '/cmn/models');
+        var models:Array<Schema> = [];
+        for (var i = modelFiles.length; i--;) {
+            var modelName = modelFiles[i].slice(0, modelFiles[i].length - 3);
+            models.push(require(__dirname + '/cmn/models/' + modelFiles[i])[modelName]['schema']);
+        }
+        return models;
+    }
+
 
     public start() {
         this.server.listen(this.setting.port);
