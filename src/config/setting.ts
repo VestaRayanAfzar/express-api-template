@@ -1,5 +1,5 @@
 import {IVariantServerAppSetting, VariantSetting} from "./setting.var";
-import {IDatabaseConfig} from "../cmn/Database";
+import {IDatabaseConfig} from "vesta-schema/Database";
 
 var env = process.env;
 
