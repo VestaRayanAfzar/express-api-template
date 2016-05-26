@@ -1,7 +1,7 @@
 import {Session} from "../session/Session";
 import {JWT} from "../helpers/JWT";
 import {setting} from "../config/setting";
-import {Err} from "../cmn/Err";
+import {Err} from "vesta-util/Err";
 
 var sessionIdPrefix = setting.security.session.idPrefix;
 

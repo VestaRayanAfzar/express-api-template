@@ -6,12 +6,13 @@ import {IServerAppSetting} from "./config/setting";
 import {ApiFactory} from "./api/ApiFactory";
 import {DatabaseFactory} from "./database/DatabaseFactory";
 import {sessionMiddleware} from "./middlewares/session";
-import {Err} from "./cmn/Err";
 import {IExtRequest} from "./api/BaseController";
-import {Database} from "./cmn/Database";
-import {Schema} from "./cmn/Schema";
 import * as fs from "fs";
-import {Model} from "./cmn/Model";
+import {Database, ISchemaList} from "vesta-schema/Database";
+import {Err} from "vesta-util/Err";
+import {Model} from "vesta-schema/Model";
+import {MySQL} from "vesta-driver-mysql/MySQL";
+import {Redis} from "vesta-driver-redis/Redis";
 var cors = require('cors');
 
 export class ServerApp {
@@ -78,29 +79,35 @@ export class ServerApp {
 
     public init() {
         this.configExpressServer();
-
-        DatabaseFactory.getInstance(this.setting.security.session.database)
+        var schemaList:ISchemaList = this.getSchemaList();
+        DatabaseFactory.register(this.setting.database, MySQL, schemaList);
+        DatabaseFactory.register(this.setting.security.session.database, Redis, schemaList);
+        DatabaseFactory.getInstance(this.setting.security.session.database.protocol)
             .then(connection=> {
                 this.sessionDatabase = connection;
-                return DatabaseFactory.getInstance(this.setting.database, this.setting.regenerateSchema);
+                return DatabaseFactory.getInstance(this.setting.database.protocol);
             })
             .then(connection=> {
                 Model.setDatabese(connection);
                 this.database = connection;
-                this.database.init(this.getSchemaList()).then(()=>this.afterDatabaseInstantiation());
+                if (this.setting.regenerateSchema) return this.database.init();
             })
+            .then(()=>
+                this.afterDatabaseInstantiation()
+            )
             .catch(err=> {
                 console.error((this.sessionDatabase ? 'Main' : 'Session') + ` Database instantiation error: `, err);
                 process.exit(1);
             });
     }
 
-    private getSchemaList():Array<Schema> {
+    private getSchemaList():ISchemaList {
         var modelFiles = fs.readdirSync(__dirname + '/cmn/models');
-        var models:Array<Schema> = [];
+        var models:ISchemaList = {};
         for (var i = modelFiles.length; i--;) {
             var modelName = modelFiles[i].slice(0, modelFiles[i].length - 3);
-            models.push(require(__dirname + '/cmn/models/' + modelFiles[i])[modelName]['schema']);
+            var model = require(__dirname + '/cmn/models/' + modelFiles[i]);
+            models[model[modelName]['schema']['name']] = model[modelName]['schema'];
         }
         return models;
     }

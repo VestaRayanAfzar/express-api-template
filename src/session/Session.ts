@@ -1,7 +1,7 @@
 import * as uuid from "node-uuid";
 import {Response} from "express";
 import {JWT} from "../helpers/JWT";
-import {Database} from "../cmn/Database";
+import {Database} from "vesta-schema/Database";
 
 export class Session {
     private storage = {};
