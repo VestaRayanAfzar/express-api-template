@@ -2,7 +2,7 @@ import {Router, Request, Response, NextFunction} from "express";
 import {Session} from "../session/Session";
 import {IServerAppSetting} from "../config/setting";
 import {Database} from "vesta-schema/Database";
-import {IUser} from "../cmn/model/User";
+import {IUser} from "../cmn/models/User";
 import {Err} from "vesta-util/Err";
 
 export interface IExtRequest extends Request {
