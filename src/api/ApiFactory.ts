@@ -1,9 +1,7 @@
 import {Router} from "express";
-import {IndexController} from "./v1/IndexController";
 import {IServerAppSetting} from "../config/setting";
 import {Acl} from "../helpers/Acl";
 import {Database} from "vesta-schema/Database";
-import {Router} from "express";
 import {exporter} from "./v1/import";
 
 export class ApiFactory {

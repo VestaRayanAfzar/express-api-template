@@ -24,7 +24,7 @@ export abstract class BaseController {
     protected user(req) {
         var user = req.session.get('user');
         user = user || {roleGroups: [{name: this.setting.security.guestRoleName}]};
-        return new User(user) ;
+        return new User(user);
     }
 
     public abstract route(router:Router):void;
@@ -32,15 +32,15 @@ export abstract class BaseController {
     protected checkAcl(resource:string, action:string) {
         this.acl.addResource(resource, action);
         return (req:Request, res:Response, next:NextFunction)=> {
-        if ((<IExtRequest>req).session) {
+            if ((<IExtRequest>req).session) {
                 var user:IUser = (<IExtRequest>req).session.get<IUser>('user');
                 if (!user) user = {roleGroups: [{name: this.setting.security.guestRoleName}]};
                 for (var i = user.roleGroups.length; i--;) {
                     if (this.acl.isAllowed((<IRole>user.roleGroups[i]).name, resource, action)) {
-                return next();
+                        return next();
+                    }
+                }
             }
-        }
-    }
             this.handleError(res, Err.Code.Forbidden, 'Access to this edge is forbidden');
         }
     }

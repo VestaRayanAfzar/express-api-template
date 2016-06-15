@@ -4,9 +4,6 @@ import {PermissionController} from "./controller/acl/PermissionController";
 import {RoleController} from "./controller/acl/RoleController";
 import {RoleGroupController} from "./controller/acl/RoleGroupController";
 import {UserController} from "./controller/UserController";
-import {TagController} from './controller/TagController';
-import {CategoryController} from './controller/CategoryController';
-import {ContentController} from './controller/ContentController';
 ///<vesta:import/>
 
 export interface IExporter {
@@ -21,9 +18,6 @@ export const exporter:IExporter = {
         role: RoleController,
         roleGroup: RoleGroupController,
         user: UserController,
-		tag: TagController,
-		category: CategoryController,
-		content: ContentController,
-		///<vesta:expressController/>
+        ///<vesta:expressController/>
     }
 };

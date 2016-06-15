@@ -101,6 +101,7 @@ export class ServerApp {
             })
             .then(()=>DatabaseFactory.getInstance('appDatabase'))
             .then(db=>this.setting.regenerateSchema ? db.init() : db)
+            .catch(e=>console.error('\n\nmyError:',e));
     }
 
     public init():Promise<any> {
@@ -111,7 +112,7 @@ export class ServerApp {
                 this.initErrorHandlers();
                 return this.acl.initAcl();
             })
-        }
+    }
 
     public start() {
         this.server.listen(this.setting.port);

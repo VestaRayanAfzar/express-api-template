@@ -33,7 +33,7 @@
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
     "node/node.d.ts": {
-      "commit": "672366c6c501561fd208021447b030df50c36590"
+      "commit": "1315d46f8066eec8c197914da88e98629ebc2254"
     },
     "morgan/morgan.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
@@ -43,6 +43,9 @@
     },
     "mysql/mysql.d.ts": {
       "commit": "672366c6c501561fd208021447b030df50c36590"
+    },
+    "formidable/formidable.d.ts": {
+      "commit": "1315d46f8066eec8c197914da88e98629ebc2254"
     }
   }
 }
