@@ -9,7 +9,7 @@ WD=`pwd`
 
 print_status(){
   echo
-  echo "====>    $1"
+  echo "## $1>"
 }
 
 cd $CLONE_PATH
@@ -26,12 +26,9 @@ print_status "Running Deploy Tasks"
 gulp deploy
 
 
-print_status "Copying Dockerfile for Api Server..."
-cp resources/docker/pm2/Dockerfile build/app/Dockerfile
-
 print_status "Configuring NGINX"
 cd $WD
-mv ${CLONE_PATH}/resources/docker/nginx/http.conf ${NGINX_PATH}/conf.d/${NGINX_CONFIG_FILE_NAME}.conf.bak
+mv ${CLONE_PATH}/resources/docker/nginx.conf ${NGINX_PATH}/conf.d/projects.conf.d/${NGINX_CONFIG_FILE_NAME}.conf
 cd $CLONE_PATH
 
 print_status "Installing node packages for Web Server"

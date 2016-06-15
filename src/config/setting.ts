@@ -13,6 +13,8 @@ export interface IServerAppSetting extends IVariantServerAppSetting {
         secret:string;
         salt:string;
         hashing:string;
+        guestRoleName:string;
+        adminRoleName:string;
         session:{
             idPrefix:string;
             hashing:string;
@@ -44,6 +46,8 @@ export const setting:IServerAppSetting = {
         secret: env.SECRET_KEY,
         salt: env.SALT,
         hashing: 'sha256',
+        guestRoleName: 'guest',
+        adminRoleName: 'admin',
         session: {
             idPrefix: 'sess:',
             hashing: 'HS256',
