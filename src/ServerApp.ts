@@ -37,6 +37,7 @@ export class ServerApp {
             allowedHeaders: ['X-Requested-With', 'Content-Type', 'Content-Length', 'X-Auth-Token', 'X-Auth-User'],
             exposedHeaders: ['Content-Type', 'Content-Length', 'X-Auth-Token']
         }));
+        //noinspection TypeScriptValidateTypes
         this.app.use(morgan(this.setting.env == 'development' ? 'dev' : 'combined'));
         this.app.use(bodyParser.urlencoded({extended: false}));
         this.app.use(bodyParser.json({limit: '10mb'}));
@@ -46,15 +47,16 @@ export class ServerApp {
         this.app.disable('strict routing');
         this.app.disable('x-powered-by');
         this.app.disable('etag');
-    };
+    }
 
-    private initRouting() {
-        var routing = ApiFactory.create(this.setting, this.acl, this.database);
+    private initRouting():Promise<any> {
+        this.app.use('/asset', express.static(this.setting.dir.upload));
         this.app.use((req:IExtRequest, res, next)=> {
             req.sessionDB = this.sessionDatabase;
             sessionMiddleware(req, res, next);
         });
-        this.app.use('/', routing);
+        return ApiFactory.create(this.setting, this.acl, this.database)
+            .then(routing=> this.app.use('/', routing));
     }
 
     private initErrorHandlers() {
@@ -101,14 +103,13 @@ export class ServerApp {
             })
             .then(()=>DatabaseFactory.getInstance('appDatabase'))
             .then(db=>this.setting.regenerateSchema ? db.init() : db)
-            .catch(e=>console.error('\n\nmyError:',e));
     }
 
     public init():Promise<any> {
         this.configExpressServer();
         return this.initDatabase()
+            .then(()=> this.initRouting())
             .then(()=> {
-                this.initRouting();
                 this.initErrorHandlers();
                 return this.acl.initAcl();
             })

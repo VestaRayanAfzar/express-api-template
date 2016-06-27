@@ -58,8 +58,7 @@ export class Acl {
                 for (var i = this.roles[roleName].length; i--;) {
                     var permission = this.roles[roleName][i];
                     if (permission.resource == '*' || permission.resource == resource) {
-                        if (permission.action == '*') return true;
-                        return permission.action == action;
+                        if (permission.action == '*' || permission.action == action) return true;
                     }
                 }
             }

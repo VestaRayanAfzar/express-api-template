@@ -33,7 +33,7 @@
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
     "node/node.d.ts": {
-      "commit": "1315d46f8066eec8c197914da88e98629ebc2254"
+      "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
     },
     "morgan/morgan.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
@@ -45,7 +45,16 @@
       "commit": "672366c6c501561fd208021447b030df50c36590"
     },
     "formidable/formidable.d.ts": {
-      "commit": "1315d46f8066eec8c197914da88e98629ebc2254"
+      "commit": "f481e77dfca5a146db1b4f5f20f15929b30c8729"
+    },
+    "jasmine/jasmine.d.ts": {
+      "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
+    },
+    "request/request.d.ts": {
+      "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
+    },
+    "form-data/form-data.d.ts": {
+      "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
     }
   }
 }

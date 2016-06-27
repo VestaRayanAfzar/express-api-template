@@ -11,18 +11,17 @@ export function sessionMiddleware(req, res, next) {
     JWT.verify(token, function (err, payload) {
         if (err) {
             return createSession();
-            // return next(new Err(Err.Code.Token, err.message));
+            // console.log('Invalid token', token);
         }
         var dbSessionId = sessionIdPrefix + payload.sessionId;
         req.sessionDB.findById(dbSessionId)
             .then(data=> {
-                if (data.items.length) {
+                if (!data.error && data.items.length) {
                     req.session = new Session(dbSessionId, data.items[0], req.sessionDB);
-            } else {
-                console.log('sessionId not found', payload.sessionId);
+                    return next();
+                }
+                // console.log('sessionId not found', payload.sessionId);
                     return createSession();
-            }
-            next();
         })
     });
 

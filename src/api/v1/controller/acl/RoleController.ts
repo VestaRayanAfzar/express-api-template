@@ -41,6 +41,7 @@ export class RoleController extends BaseController {
         if (validationError) {
             var result:IUpsertResult<IRole> = <IUpsertResult<IRole>>{};
             result.error = new ValidationError(validationError);
+            this.acl.initAcl();
             return res.json(result);
         }
         role.insert<IRole>()
@@ -58,7 +59,10 @@ export class RoleController extends BaseController {
         }
         Role.findById<IRole>(role.id)
             .then(result=> {
-                if (result.items.length == 1) return role.update().then(result=>res.json(result));
+                if (result.items.length == 1) return role.update().then(result=> {
+                    this.acl.initAcl();
+                    res.json(result);
+                });
                 this.handleError(res, Err.Code.DBUpdate);
             })
             .catch(err=> this.handleError(res, Err.Code.DBUpdate, err.message));
@@ -74,7 +78,10 @@ export class RoleController extends BaseController {
                     return this.handleError(res, Err.Code.Forbidden, 'admin and guest role are required');
                 }
                 var role = new Role({id: req.body.id});
-                return role.delete().then(result=> res.json(result))
+                return role.delete().then(result=> {
+                    this.acl.initAcl();
+                    res.json(result);
+                })
             })
             .catch(err=> this.handleError(res, Err.Code.DBDelete, err.message));
 

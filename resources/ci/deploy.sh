@@ -2,17 +2,39 @@
 
 CLONE_PATH=$1
 DEPLOY_PATH=$2
-USE_SSL=$3
-NGINX_PATH=$4
-NGINX_CONFIG_FILE_NAME=$5
+NGINX_PATH="/etc/nginx/conf.d/api.conf"
+NODE_PKG_CACHE_PATH=/tmp/armanApiServer_node_modules
 WD=`pwd`
+counter=0
 
-print_status(){
-  echo
-  echo "## $1>"
+npm_install(){
+  BACKUP_PATH=${NODE_PKG_CACHE_PATH}_${1}
+
+  if [ -d ${BACKUP_PATH} ]; then
+    cp -R ${BACKUP_PATH} node_modules
+  fi
+
+  if [ $1 == "production" ]; then
+    npm install --no-progress --production
+  else
+    npm install --no-progress
+  fi;
+
+  if [ -d ${BACKUP_PATH} ]; then
+    rm -rf ${BACKUP_PATH}
+  fi
+
+  cp -R node_modules ${BACKUP_PATH}
 }
 
-cd $CLONE_PATH
+print_status(){
+  ((counter=counter+1))
+  echo
+  echo "${counter}: $1>"
+  echo
+}
+
+cd ${CLONE_PATH}
 print_status "Cloning SubModules"
 git checkout master
 git submodule update --init src/cmn
@@ -21,38 +43,38 @@ git submodule foreach git checkout master
 mv resources/gitignore/src/config/setting.var.ts src/config/setting.var.ts
 
 print_status "Installing Node Packages"
-npm install --no-progress
+#npm install --no-progress
+npm_install dev
 print_status "Running Deploy Tasks"
 gulp deploy
 
-
 print_status "Configuring NGINX"
-cd $WD
-mv ${CLONE_PATH}/resources/docker/nginx.conf ${NGINX_PATH}/conf.d/projects.conf.d/${NGINX_CONFIG_FILE_NAME}.conf
-cd $CLONE_PATH
+cd ${WD}
+mv ${CLONE_PATH}/resources/docker/nginx.conf ${NGINX_PATH}
+cd ${CLONE_PATH}
 
 print_status "Installing node packages for Web Server"
-cp package.json build/app/api/package.json
-cd build/app/api
-npm install --production --no-progress
+cp package.json build/app/package.json
+cd build/app
+#npm install --production --no-progress
+npm_install production
 
-cd $WD
-if [ -d $DEPLOY_PATH ]; then
+cd ${WD}
+if [ -d ${DEPLOY_PATH} ]; then
   print_status "Stopping Previously Running Containers"
-  cd $DEPLOY_PATH
+  cd ${DEPLOY_PATH}
   docker-compose stop
   docker-compose down
-  cd $WD
+  cd ${WD}
 fi
 
-rm -rf $DEPLOY_PATH
-mkdir -p $DEPLOY_PATH
+rm -rf ${DEPLOY_PATH}
+mkdir -p ${DEPLOY_PATH}
 mv ${CLONE_PATH}/build/app ${DEPLOY_PATH}/app
-mv ${CLONE_PATH}/resources/docker/docker-compose-lb.yml ${DEPLOY_PATH}/docker-compose.yml
+mv ${CLONE_PATH}/resources/docker/docker-compose.yml ${DEPLOY_PATH}/docker-compose.yml
 
 print_status "Starting Containers"
-cd $DEPLOY_PATH
+cd ${DEPLOY_PATH}
 docker-compose up -d --build
 print_status "All done"
-print_status "Warning! DO NOT FORGET to update the volumes, networks, external_links of the NGINX docker-compose file"
 exit 0

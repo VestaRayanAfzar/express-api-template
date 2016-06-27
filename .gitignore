@@ -3,7 +3,5 @@ npm-debug*
 tsd-debug*
 /build
 /node_modules
-/resources/data
-/resources/volumes
 /resources/tsd
 /src/config/setting.var.ts

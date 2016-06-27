@@ -1,10 +1,10 @@
-import {Response, Router} from 'express';
-import {BaseController, IExtRequest} from '../../../BaseController';
-import {Err} from 'vesta-util/Err';
-import {ValidationError} from 'vesta-schema/error/ValidationError';
-import {Permission, IPermission} from '../../../../cmn/models/Permission';
-import {IUpsertResult} from 'vesta-schema/ICRUDResult';
-import {Vql} from 'vesta-schema/Vql';
+import {Response, Router} from "express";
+import {BaseController, IExtRequest} from "../../../BaseController";
+import {Err} from "vesta-util/Err";
+import {ValidationError} from "vesta-schema/error/ValidationError";
+import {Permission, IPermission} from "../../../../cmn/models/Permission";
+import {IUpsertResult} from "vesta-schema/ICRUDResult";
+import {Vql} from "vesta-schema/Vql";
 
 
 export class PermissionController extends BaseController {
@@ -22,7 +22,7 @@ export class PermissionController extends BaseController {
     public getPermission(req:IExtRequest, res:Response, next:Function) {
         Permission.findById<IPermission>(req.params.id)
             .then(result=> res.json(result))
-            .catch(err=> this.handleError(res, Err.Code.DBQuery, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public getPermissions(req:IExtRequest, res:Response, next:Function) {
@@ -30,7 +30,7 @@ export class PermissionController extends BaseController {
         query.filter(req.params.query);
         Permission.findByQuery(query)
             .then(result=>res.json(result))
-            .catch(err=>this.handleError(res, Err.Code.DBQuery, err.message));
+            .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
 
@@ -44,14 +44,16 @@ export class PermissionController extends BaseController {
         }
         Permission.findById<IPermission>(permission.id)
             .then(result=> {
-                if (result.items.length == 1){
+                if (result.items.length == 1) {
                     result.items[0].status = permission.status;
                     permission.setValues(result.items[0]);
-                    return permission.update().then(result=>res.json(result));
+                    return permission.update().then(result=> {
+                        this.acl.initAcl();
+                        res.json(result);
+                    });
                 }
                 this.handleError(res, Err.Code.DBUpdate);
             })
-            .catch(err=> this.handleError(res, Err.Code.DBUpdate, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBUpdate, reason.error.message));
     }
-
 }

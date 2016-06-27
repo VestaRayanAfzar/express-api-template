@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import {Router, Request, Response, NextFunction} from "express";
 import {Session} from "../session/Session";
 import {IServerAppSetting} from "../config/setting";
@@ -45,11 +46,30 @@ export abstract class BaseController {
         }
     }
 
-    protected handleError(res:Response, code:number = 500, message:string = ''):void {
+    public resolve():Promise<boolean> {
+        return null;
+    }
+
+    protected handleError(res:Response, error:Err);
+    protected handleError(res:Response, code:number, message?:string);
+    protected handleError(res:Response, code:any, message?:any):void {
+        if (typeof code == 'number') {
         var err = new Err(code, message);
         if (code) {
             res.status(code);
         }
+        } else {
+            var err = <Err>code;
+        }
         res.json({error: err});
+    }
+
+    protected checkAndDeleteImage(filePath:string) {
+        return new Promise((resolve, reject)=> {
+            fs.exists(filePath, exists=> {
+                if (exists) return fs.unlink(filePath, err=> err ? reject(err) : resolve());
+                resolve();
+            })
+        })
     }
 }

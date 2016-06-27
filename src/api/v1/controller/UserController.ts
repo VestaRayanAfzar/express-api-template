@@ -6,8 +6,8 @@ import {User, IUser} from "../../../cmn/models/User";
 import {IUpsertResult} from "vesta-schema/ICRUDResult";
 import {Vql} from "vesta-schema/Vql";
 
-
 export class UserController extends BaseController {
+
     public route(router:Router) {
         router.get('/acl/user/:id', this.checkAcl('acl.user', 'read'), this.getUser.bind(this));
         router.get('/acl/user', this.checkAcl('acl.user', 'read'), this.getUsers.bind(this));

@@ -24,7 +24,7 @@ export class RoleGroupController extends BaseController {
     public getRoleGroup(req:IExtRequest, res:Response, next:Function) {
         RoleGroup.findById<IRoleGroup>(req.params.id, {relations: ['roles']})
             .then(result=> res.json(result))
-            .catch(err=> this.handleError(res, Err.Code.DBQuery, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public getRoleGroups(req:IExtRequest, res:Response, next:Function) {
@@ -32,7 +32,7 @@ export class RoleGroupController extends BaseController {
         query.filter(req.params.query);
         RoleGroup.findByQuery(query)
             .then(result=>res.json(result))
-            .catch(err=>this.handleError(res, Err.Code.DBQuery, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public addRoleGroup(req:IExtRequest, res:Response, next:Function) {
@@ -41,11 +41,12 @@ export class RoleGroupController extends BaseController {
         if (validationError) {
             var result:IUpsertResult<IRoleGroup> = <IUpsertResult<IRoleGroup>>{};
             result.error = new ValidationError(validationError);
+            this.acl.initAcl();
             return res.json(result);
         }
         roleGroup.insert<IRoleGroup>()
             .then(result=> res.json(result))
-            .catch(err=> this.handleError(res, Err.Code.DBInsert, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBInsert, reason.error.message));
     }
 
     public updateRoleGroup(req:IExtRequest, res:Response, next:Function) {
@@ -58,16 +59,22 @@ export class RoleGroupController extends BaseController {
         }
         RoleGroup.findById<IRoleGroup>(roleGroup.id)
             .then(result=> {
-                if (result.items.length == 1) return roleGroup.update().then(result=>res.json(result));
+                if (result.items.length == 1) return roleGroup.update().then(result=> {
+                    this.acl.initAcl();
+                    res.json(result);
+                });
                 this.handleError(res, Err.Code.DBUpdate);
             })
-            .catch(err=> this.handleError(res, Err.Code.DBUpdate, err.message));
+            .catch(reason=> this.handleError(res, Err.Code.DBUpdate, reason.error.message));
     }
 
     public removeRoleGroup(req:IExtRequest, res:Response, next:Function) {
         var roleGroup = new RoleGroup({id: req.body.id});
         roleGroup.delete()
-            .then(result=> res.json(result))
-            .catch(err=> this.handleError(res, Err.Code.DBDelete, err.message));
+            .then(result=>{
+                this.acl.initAcl();
+                res.json(result);
+            })
+            .catch(reason=> this.handleError(res, Err.Code.DBDelete, reason.error.message));
     }
 }

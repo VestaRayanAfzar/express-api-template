@@ -3,17 +3,17 @@ import {BaseController, IExtRequest} from "../../BaseController";
 import {Err} from "vesta-util/Err";
 import {ValidationError} from "vesta-schema/error/ValidationError";
 import {User, IUser} from "../../../cmn/models/User";
-import {IUpsertResult} from "vesta-schema/ICRUDResult";
+import {IUpsertResult, IQueryResult} from "vesta-schema/ICRUDResult";
 import {Session} from "../../../session/Session";
 import {IRequestResult} from "vesta-util/IRequestResult";
 import {RoleGroup} from "../../../cmn/models/RoleGroup";
 import {Hashing} from "../../../helpers/Hashing";
 
-
 export class AccountController extends BaseController {
 
     public route(router:Router) {
-        router.get('/account', this.checkAcl('account', 'read'), this.getMe.bind(this));
+        router.get('/me', this.getMe.bind(this));
+        router.get('/account/list', this.checkAcl('account', 'read'), this.userList.bind(this));
         router.put('/account', this.checkAcl('account', 'update'), this.update.bind(this));
         router.post('/account', this.checkAcl('account', 'register'), this.register.bind(this));
         router.post('/account/login', this.checkAcl('account', 'login'), this.login.bind(this));
@@ -106,13 +106,29 @@ export class AccountController extends BaseController {
     }
 
     public getMe(req:IExtRequest, res:Response, next:Function) {
-        User.findById<IUser>(this.user(req).id, {relations: [{name: 'roleGroups', fields: ['id', 'name', 'status']}]})
+        var user = this.user(req);
+        if (user.id) {
+            User.findById<IUser>(user.id, {relations: [{name: 'roleGroups', fields: ['id', 'name', 'status']}]})
             .then(result=> {
                 result.items[0]['roleGroups'] = this.updateGroupRoles(<Array<RoleGroup>>result.items[0]['roleGroups']);
                 result.items[0].password = '';
                 res.json(result)
             })
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+        } else {
+            var guest = <IUser>{
+                username: this.setting.security.guestRoleName,
+                roleGroups: this.updateGroupRoles(<Array<RoleGroup>>[{
+                    status: true,
+                    name: this.setting.security.guestRoleName
+                }])
+            };
+            res.json(<IQueryResult<IUser>>{items: [guest]});
+        }
+    }
+
+    public userList(req:IExtRequest, res:IExtRequest, next:Function) {
+
     }
 
     public update(req:IExtRequest, res:Response, next:Function) {
