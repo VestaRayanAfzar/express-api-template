@@ -14,7 +14,13 @@ This template has the following features:
 ### How to run
 
 #### Development
-To start the server first you have to run `gulp` and then run `docker-compose up` on the root of the project.
+Set `regenerateSchema` value to `true` from `src/config/setting.ts`, for the first time to create the necessary tables.
+Also after adding new models you have to change this to `true` for database to create related table. All your data will be erased if server starts and this value is set to true.
+
+*Do NOT forget to change this value to false to prevent data loss*
+
+Then to start the server first you have to run `gulp`.
+Now your project is ready to be executed by docker. Just run `docker-compose up` at the root of the project.
 The server will be listening on port `9003`(of course you can change it from docker-compose.yml in root directory) 
 at your docker-engine address.
 You can use [vesta](https://github.com/VestaRayanAfzar/vesta) code generator to create new models and controllers.

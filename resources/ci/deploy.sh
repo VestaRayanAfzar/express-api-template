@@ -2,7 +2,7 @@
 
 CLONE_PATH=$1
 DEPLOY_PATH=$2
-NGINX_PATH="/etc/nginx/conf.d/api.conf"
+NGINX_PATH=/etc/nginx/conf.d/api.conf
 NODE_PKG_CACHE_PATH=/tmp/armanApiServer_node_modules
 WD=`pwd`
 counter=0
@@ -40,10 +40,7 @@ git checkout master
 git submodule update --init src/cmn
 git submodule foreach git checkout master
 
-mv resources/gitignore/src/config/setting.var.ts src/config/setting.var.ts
-
 print_status "Installing Node Packages"
-#npm install --no-progress
 npm_install dev
 print_status "Running Deploy Tasks"
 gulp deploy
@@ -56,7 +53,6 @@ cd ${CLONE_PATH}
 print_status "Installing node packages for Web Server"
 cp package.json build/app/package.json
 cd build/app
-#npm install --production --no-progress
 npm_install production
 
 cd ${WD}

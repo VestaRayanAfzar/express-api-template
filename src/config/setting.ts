@@ -1,11 +1,11 @@
-import {IVariantServerAppSetting, VariantSetting} from "./setting.var";
 import {IDatabaseConfig} from "vesta-schema/Database";
 
 var env = process.env;
 
-export interface IServerAppSetting extends IVariantServerAppSetting {
+export interface IServerAppSetting {
     env:string;
     version:{app:string; api:string};
+    regenerateSchema:boolean;
     database:IDatabaseConfig;
     port:number;
     dir:{upload:string};
@@ -29,6 +29,7 @@ export const setting:IServerAppSetting = {
         app: '0.1.0',
         api: 'v1'
     },
+    regenerateSchema: false,
     database: <IDatabaseConfig>{
         protocol: env.ADB_PROTOCOL,
         host: env.ADB_HOST,
@@ -40,7 +41,6 @@ export const setting:IServerAppSetting = {
     dir: {
         upload: '/upload'
     },
-    regenerateSchema: VariantSetting.regenerateSchema,
     port: env.PORT,
     security: {
         secret: env.SECRET_KEY,

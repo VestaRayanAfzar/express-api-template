@@ -5,7 +5,7 @@ services:
   session:
     image: redis
     ports:
-      - '9001:6379'
+      - '6379:6379'
     volumes:
       - session-db-storage:/data
     networks:
@@ -14,7 +14,7 @@ services:
   database:
     image: mysql
     ports:
-      - '9002:3306'
+      - '3306:3306'
     volumes:
       - app-db-storage:/var/lib/mysql
     networks:
@@ -26,8 +26,8 @@ services:
   api:
     image: node
     ports:
-      - '9003:3000'
-      - '9004:5858'
+      - '3000:3000'
+      - '5858:5858'
     volumes:
       - .:/app
       - app-storage:/upload
