@@ -31,6 +31,7 @@ export function populate() {
 
     var guest = [];
     guest.push(Permission.findByModelValues({resource: 'account', action: 'login'}));
+    guest.push(Permission.findByModelValues({resource: 'account', action: 'register'}));
     guest.push(Permission.findByModelValues({resource: 'index', action: 'hi'}));
     var guestPromise = Promise.all(guest)
         .then(data=> {

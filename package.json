@@ -20,11 +20,11 @@
     "morgan": "^1.7.0",
     "mysql": "^2.10.2",
     "node-uuid": "^1.4.7",
-    "vesta-driver-mysql": "^0.2.39",
-    "vesta-driver-redis": "^0.2.5",
-    "vesta-schema": "^0.3.14",
+    "vesta-driver-mysql": "^0.3.9",
+    "vesta-driver-redis": "^0.2.7",
+    "vesta-schema": "^0.4.4",
     "vesta-schema-HLCondition": "0.0.3",
-    "vesta-util": "^0.2.6"
+    "vesta-util": "^0.2.7"
   },
   "devDependencies": {
     "fs-extra": "^0.26.7",

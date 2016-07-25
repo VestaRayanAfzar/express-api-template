@@ -9,6 +9,7 @@ import {IRequestResult} from "vesta-util/IRequestResult";
 import {RoleGroup} from "../../../cmn/models/RoleGroup";
 import {Hashing} from "../../../helpers/Hashing";
 
+
 export class AccountController extends BaseController {
 
     public route(router:Router) {
@@ -96,13 +97,9 @@ export class AccountController extends BaseController {
             .then(data=> {
                 req.session && req.session.destroy();
                 Session.createSession(req.sessionDB, this.setting.security.session.idPrefix, {}, res)
-                    .then(session=> {
-                        result.result = true;
-                        res.json(result);
-                    })
+                    .then(session=> this.getMe(req, res, next))
             })
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
-
     }
 
     public getMe(req:IExtRequest, res:Response, next:Function) {

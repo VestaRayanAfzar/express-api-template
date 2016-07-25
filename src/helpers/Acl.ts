@@ -4,6 +4,7 @@ import {IRoleGroup, RoleGroup} from "../cmn/models/RoleGroup";
 import {Vql} from "vesta-schema/Vql";
 import {setting} from "../config/setting";
 import {populate} from "../config/db-population";
+import {IUser} from "../cmn/models/User";
 
 export interface IGroupsList {
     [group:string]:Array<IRole>
@@ -18,6 +19,14 @@ interface IResourceList {
 }
 
 export enum AclPolicy {Allow = 1, Deny}
+export enum AclScope{Model = 1, Entity, Field}
+/**
+ * Private (Read mine, Write mine)
+ * Shared (Read all, Write mine)
+ * ReadOnly (Read all, Write none)
+ * Public (Read aa, Write all)
+ */
+export enum AclAccessType {Private = 1, Shared, ReadOnly, Public}
 
 export class Acl {
     private resourceList:IResourceList = {
@@ -40,9 +49,9 @@ export class Acl {
     }
 
     public getGroupRoles(groupName) {
-        var roles:Array<IRole> = JSON.parse(JSON.stringify(this.groups[groupName]));
-        for (var i = roles.length; i--;) {
-            var roleName = roles[i]['name'];
+        let roles:Array<IRole> = JSON.parse(JSON.stringify(this.groups[groupName]));
+        for (let i = roles.length; i--;) {
+            let roleName = roles[i]['name'];
             if (this.roles[roleName]) {
                 roles[i].permissions = this.roles[roleName];
             }
@@ -52,11 +61,11 @@ export class Acl {
 
     public isAllowed(groupName:string, resource:string, action:string):boolean {
         if (!(groupName in this.groups)) return this.defaultPolicy == AclPolicy.Allow;
-        for (var j = this.groups[groupName].length; j--;) {
+        for (let j = this.groups[groupName].length; j--;) {
             if (this.groups[groupName][j].status) {
-                var roleName = this.groups[groupName][j].name;
-                for (var i = this.roles[roleName].length; i--;) {
-                    var permission = this.roles[roleName][i];
+                let roleName = this.groups[groupName][j].name;
+                for (let i = this.roles[roleName].length; i--;) {
+                    let permission = this.roles[roleName][i];
                     if (permission.resource == '*' || permission.resource == resource) {
                         if (permission.action == '*' || permission.action == action) return true;
                     }
@@ -68,17 +77,17 @@ export class Acl {
 
     public update(roles:Array<IRole>, groups:Array<IRoleGroup>) {
         if (!roles || !roles.length) return;
-        for (var i = roles.length; i--;) {
-            var role = roles[i];
+        for (let i = roles.length; i--;) {
+            let role = roles[i];
             if (role.status) {
-                for (var j = role.permissions.length; j--;) {
-                    var permission:IPermission = <IPermission>role.permissions[j];
+                for (let j = role.permissions.length; j--;) {
+                    let permission:IPermission = <IPermission>role.permissions[j];
                     if (permission.status) this.allow(role.name, permission.resource, permission.action);
                 }
             }
         }
-        for (var i = groups.length; i--;) {
-            var group = groups[i];
+        for (let i = groups.length; i--;) {
+            let group = groups[i];
             if (group.status && group.roles) {
                 this.groups[group['name']] = this.groups[group['name']] || [];
                 this.groups[group['name']] = group.roles;
@@ -100,19 +109,19 @@ export class Acl {
     }
 
     public initAcl() {
-        var updateAclPromise:Array<Promise<any>> = [];
-        // var permissionsToAdd:Array<IPermission> = [],
+        let updateAclPromise:Array<Promise<any>> = [];
+        // let permissionsToAdd:Array<IPermission> = [],
         //     permissionsToRemove:Array<IPermission> = [];
         return Permission.findByQuery<Permission>(new Vql(Permission.schema.name))
             .then(result=> {
-                var resources = this.resources;
-                for (var resource in resources) {
+                let resources = this.resources;
+                for (let resource in resources) {
                     if (resources.hasOwnProperty(resource)) {
-                        var resourcePermissions = resources[resource];
-                        for (var i = 0; i < resourcePermissions.length; i++) {
-                            var found = false;
-                            var action = resourcePermissions[i];
-                            for (var j = result.items.length; j--;) {
+                        let resourcePermissions = resources[resource];
+                        for (let i = 0; i < resourcePermissions.length; i++) {
+                            let found = false;
+                            let action = resourcePermissions[i];
+                            for (let j = result.items.length; j--;) {
                                 if (result.items[j].resource == resource && result.items[j].action == action) {
                                     found = true;
                                     break;
@@ -128,9 +137,9 @@ export class Acl {
                         }
                     }
                 }
-                for (var i = result.items.length; i--;) {
-                    var aclResource:string = result.items[i].resource;
-                    var aclAction:string = result.items[i].action;
+                for (let i = result.items.length; i--;) {
+                    let aclResource:string = result.items[i].resource;
+                    let aclAction:string = result.items[i].action;
                     if (!resources[aclResource] || resources[aclResource].indexOf(aclAction) < 0) {
                         updateAclPromise.push(new Permission({id: result.items[i].id}).delete())
                         // permissionsToRemove.push({id: result.items[i].id});
@@ -141,16 +150,16 @@ export class Acl {
                 });
             })
             .then(()=> {
-                var rolePromise = new Promise((resolve, reject)=> {
-                    var query = new Vql(Role.schema.name);
+                let rolePromise = new Promise((resolve, reject)=> {
+                    let query = new Vql(Role.schema.name);
                     query.fetchRecordFor('permissions');
                     Role.findByQuery<IRole>(query).then(result=> {
                         if (result.error) return reject(result.error);
                         resolve(result.items)
                     });
                 });
-                var groupPromise = new Promise((resolve, reject)=> {
-                    var query = new Vql(RoleGroup.schema.name);
+                let groupPromise = new Promise((resolve, reject)=> {
+                    let query = new Vql(RoleGroup.schema.name);
                     query.fetchRecordFor('roles');
                     RoleGroup.findByQuery<IRoleGroup>(query).then(result=> {
                         if (result.error) return reject(result.error);
@@ -163,5 +172,14 @@ export class Acl {
                 })
 
             })
+    }
+
+    /**
+     * check if the user has access to execute the query or not
+     *
+     */
+    public hasAccess(query:Vql, user:IUser):boolean {
+        if (user.username == 'root') return true;
+        return false;
     }
 }

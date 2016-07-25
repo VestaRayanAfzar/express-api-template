@@ -39,8 +39,8 @@ export class ServerApp {
         }));
         //noinspection TypeScriptValidateTypes
         this.app.use(morgan(this.setting.env == 'development' ? 'dev' : 'combined'));
-        this.app.use(bodyParser.urlencoded({extended: false}));
-        this.app.use(bodyParser.json({limit: '10mb'}));
+        this.app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
+        this.app.use(bodyParser.json({limit: '50mb'}));
 
         this.app.enable('trust proxy');
         this.app.disable('case sensitive routing');

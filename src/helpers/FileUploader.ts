@@ -6,7 +6,7 @@ import {setting} from "../config/setting";
 import {Err} from "vesta-util/Err";
 import {Hashing} from "./Hashing";
 import {IExtRequest} from "../api/BaseController";
-var mkdirp = require('mkdirp');
+let mkdirp = require('mkdirp');
 
 export class FileUploader<T> {
     private form = new formidable.IncomingForm();
@@ -15,10 +15,11 @@ export class FileUploader<T> {
     constructor(private destination:string, private genRandomFileName:boolean = true) {
         this.form.uploadDir = path.join(setting.dir.upload, 'tmp');
         this.form.keepExtensions = true;
+        this.form.multiples = true;
     }
 
     public upload(req:IExtRequest):Promise<T> {
-        var uploadedFiles:T = <T>{};
+        let uploadedFiles:T = <T>{};
         return new Promise((resolve, reject)=> {
             this.form.parse(req, (err, fields, files)=> {
                 if (err) {
@@ -29,17 +30,26 @@ export class FileUploader<T> {
             })
         })
             .then(()=> this.assertDestination())
-            .then(()=> {
+            .then(()=> this.moveFiles(this.files))
+
+    }
+
+    private moveFiles(files) {
                 var renameList = [];
-                Object.keys(this.files).forEach(fieldName=> {
-                    var uploadPath = this.files[fieldName].path;
-                    var fileName = this.genFileName(uploadPath);
+        var uploadedFiles = files instanceof Array ? [] : {}; 
+        Object.keys(files).forEach(fieldName=> {
+            if (files[fieldName] instanceof Array) {
+                renameList.push(this.moveFiles(files[fieldName]).then((subFiles)=> {
+                    uploadedFiles[fieldName] = subFiles;
+                }));
+            } else {
+                let uploadPath = files[fieldName].path;
+                let fileName = this.genFileName(uploadPath);
                     uploadedFiles[fieldName] = fileName;
                     renameList.push(this.rename(uploadPath, path.join(this.destination, fileName)));
+            }
                 });
-                return Promise.all(renameList);
-            })
-            .then(()=> uploadedFiles);
+        return Promise.all(renameList).then(()=>uploadedFiles);
     }
 
     private assertDestination():Promise<any> {
@@ -65,8 +75,8 @@ export class FileUploader<T> {
     }
 
     private genFileName(filePath:string):string {
-        var parts = path.parse(filePath);
-        var name = (this.genRandomFileName ? Hashing.simple(parts.name + Date.now().toString()) : parts.name);
+        let parts = path.parse(filePath);
+        let name = (this.genRandomFileName ? Hashing.simple(parts.name + Date.now().toString()) : parts.name);
         name += parts.ext;
         return name;
     }

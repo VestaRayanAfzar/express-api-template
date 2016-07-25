@@ -23,7 +23,7 @@ export abstract class BaseController {
     }
 
     protected user(req) {
-        var user = req.session.get('user');
+        let user = req.session.get('user');
         user = user || {roleGroups: [{name: this.setting.security.guestRoleName}]};
         return new User(user);
     }
@@ -34,9 +34,9 @@ export abstract class BaseController {
         this.acl.addResource(resource, action);
         return (req:Request, res:Response, next:NextFunction)=> {
             if ((<IExtRequest>req).session) {
-                var user:IUser = (<IExtRequest>req).session.get<IUser>('user');
+                let user:IUser = (<IExtRequest>req).session.get<IUser>('user');
                 if (!user) user = {roleGroups: [{name: this.setting.security.guestRoleName}]};
-                for (var i = user.roleGroups.length; i--;) {
+                for (let i = user.roleGroups.length; i--;) {
                     if (this.acl.isAllowed((<IRole>user.roleGroups[i]).name, resource, action)) {
                         return next();
                     }
@@ -53,22 +53,24 @@ export abstract class BaseController {
     protected handleError(res:Response, error:Err);
     protected handleError(res:Response, code:number, message?:string);
     protected handleError(res:Response, code:any, message?:any):void {
+        let err:Err;
         if (typeof code == 'number') {
-        var err = new Err(code, message);
-        if (code) {
-            res.status(code);
-        }
+            err = new Err(code, message);
         } else {
-            var err = <Err>code;
+            err = <Err>code;
+            if (this.setting.env == 'production') {
+                err = new Err(Err.Code.Server, `Something goes wrong (Production Mode)`);
         }
-        res.json({error: err});
+        }
+        res.status(code < Err.Code.Client ? Err.Code.Server : code);
+        res.json(err);
     }
 
-    protected checkAndDeleteImage(filePath:string) {
+    protected checkAndDeleteFile(filePath:string):Promise<string> {
         return new Promise((resolve, reject)=> {
             fs.exists(filePath, exists=> {
-                if (exists) return fs.unlink(filePath, err=> err ? reject(err) : resolve());
-                resolve();
+                if (exists) return fs.unlink(filePath, err=> err ? reject(err) : resolve(filePath));
+                resolve(filePath);
             })
         })
     }
