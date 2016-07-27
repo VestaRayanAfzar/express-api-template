@@ -3,7 +3,7 @@
 CLONE_PATH=$1
 DEPLOY_PATH=$2
 NGINX_PATH=/etc/nginx/conf.d/api.conf
-NODE_PKG_CACHE_PATH=/tmp/armanApiServer_node_modules
+NODE_PKG_CACHE_PATH=/tmp/expressJsTemplate_node_modules
 WD=`pwd`
 counter=0
 

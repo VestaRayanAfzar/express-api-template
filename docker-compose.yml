@@ -7,7 +7,7 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - session-db-storage:/data
+      - session:/data
     networks:
       - network
 
@@ -16,7 +16,7 @@ services:
     ports:
       - '3306:3306'
     volumes:
-      - app-db-storage:/var/lib/mysql
+      - database:/var/lib/mysql
     networks:
       - network
     environment:
@@ -30,7 +30,7 @@ services:
       - '5858:5858'
     volumes:
       - .:/app
-      - app-storage:/upload
+      - storage:/upload
     networks:
       - network
     working_dir: /app
@@ -54,9 +54,9 @@ services:
       - database
 
 volumes:
-  session-db-storage:
-  app-db-storage:
-  app-storage:
+  session:
+  database:
+  storage:
 
 networks:
   network:
