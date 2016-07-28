@@ -21,7 +21,7 @@ services:
       - network
     environment:
       MYSQL_ROOT_PASSWORD: '__DB_PASSWORD__'
-      MYSQL_DATABASE: expressJsTemplate
+      MYSQL_DATABASE: vesta
 
   api:
     image: vesta/pm2
@@ -46,7 +46,7 @@ services:
       ADB_PORT: 3306
       ADB_USERNAME: root
       ADB_PASSWORD: '__DB_PASSWORD__'
-      ADB_NAME: expressJsTemplate
+      ADB_NAME: vesta
       SALT: '__SALT__'
       SECRET_KEY: '__SECRET_KEY__'
     depends_on:
