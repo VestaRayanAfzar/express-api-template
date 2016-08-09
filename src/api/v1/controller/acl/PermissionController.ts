@@ -10,6 +10,7 @@ import {Vql} from "vesta-schema/Vql";
 export class PermissionController extends BaseController {
 
     public route(router:Router) {
+        router.get('/permission/count', this.checkAcl('acl.permission', 'read'), this.getPermissionsCount.bind(this));
         router.get('/permission/:id', this.checkAcl('acl.permission', 'read'), this.getPermission.bind(this));
         router.get('/permission', this.checkAcl('acl.permission', 'read'), this.getPermissions.bind(this));
         router.put('/permission', this.checkAcl('acl.permission', 'update'), this.updatePermission.bind(this));
@@ -23,6 +24,14 @@ export class PermissionController extends BaseController {
         Permission.findById<IPermission>(req.params.id)
             .then(result=> res.json(result))
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+    }
+
+    public getPermissionsCount(req:IExtRequest, res:Response, next:Function) {
+        var query = new Vql('Permission');
+        query.filter(req.params.query);
+        Permission.count(query)
+            .then(result=>res.json(result))
+            .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public getPermissions(req:IExtRequest, res:Response, next:Function) {

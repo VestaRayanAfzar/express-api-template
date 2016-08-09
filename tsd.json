@@ -6,46 +6,40 @@
   "bundle": "resources/tsd/tsd.d.ts",
   "installed": {
     "node-uuid/node-uuid.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "serve-static/serve-static.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "express/express.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
-    },
-    "redis/redis.d.ts": {
-      "commit": "dbb2d9f1f1f0e50a3530dcfc02944f492be246dd"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "jsonwebtoken/jsonwebtoken.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "mime/mime.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "node-uuid/node-uuid-base.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "node-uuid/node-uuid-cjs.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "body-parser/body-parser.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "node/node.d.ts": {
-      "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "morgan/morgan.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "es6-promise/es6-promise.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
-    "mysql/mysql.d.ts": {
-      "commit": "672366c6c501561fd208021447b030df50c36590"
-    },
     "formidable/formidable.d.ts": {
-      "commit": "f481e77dfca5a146db1b4f5f20f15929b30c8729"
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "jasmine/jasmine.d.ts": {
       "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
@@ -55,6 +49,9 @@
     },
     "form-data/form-data.d.ts": {
       "commit": "3ee59b28b6c492d59c42bafd880d2c4d64788cbb"
+    },
+    "express-serve-static-core/express-serve-static-core.d.ts": {
+      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     }
   }
 }
