@@ -7,15 +7,15 @@ import {populate} from "../config/db-population";
 import {IUser} from "../cmn/models/User";
 
 export interface IGroupsList {
-    [group:string]:Array<IRole>
+    [group: string]: Array<IRole>
 }
 
 export interface IRolesList {
-    [role:string]:Array<IPermission>
+    [role: string]: Array<IPermission>
 }
 
 interface IResourceList {
-    [name:string]:Array<string>;
+    [name: string]: Array<string>;
 }
 
 export enum AclPolicy {Allow = 1, Deny}
@@ -29,19 +29,19 @@ export enum AclScope{Model = 1, Entity, Field}
 export enum AclAccessType {Private = 1, Shared, ReadOnly, Public}
 
 export class Acl {
-    private resourceList:IResourceList = {
-        '*': ['*', 'read', 'create', 'update', 'delete']
+    private resourceList: IResourceList = {
+        '*': ['*', Permission.Action.Read, Permission.Action.Add, Permission.Action.Edit, Permission.Action.Delete]
     };
-    private roles:IRolesList = {};
+    private roles: IRolesList = {};
     private defaultPolicy = AclPolicy.Deny;
-    private groups:IGroupsList = {};
+    private groups: IGroupsList = {};
 
-    constructor(defaultPolicy:AclPolicy, roles?:Array<IRole>, groups?:Array<IRoleGroup>) {
+    constructor(defaultPolicy: AclPolicy, roles?: Array<IRole>, groups?: Array<IRoleGroup>) {
         this.defaultPolicy = defaultPolicy;
         this.update(roles, groups);
     }
 
-    public allow(roleName:string, resource:string, action?:string) {
+    public allow(roleName: string, resource: string, action?: string) {
         if (!(roleName in this.roles)) {
             this.roles[roleName] = [];
         }
@@ -49,7 +49,7 @@ export class Acl {
     }
 
     public getGroupRoles(groupName) {
-        let roles:Array<IRole> = JSON.parse(JSON.stringify(this.groups[groupName]));
+        let roles: Array<IRole> = JSON.parse(JSON.stringify(this.groups[groupName]));
         for (let i = roles.length; i--;) {
             let roleName = roles[i]['name'];
             if (this.roles[roleName]) {
@@ -59,7 +59,7 @@ export class Acl {
         return roles;
     }
 
-    public isAllowed(groupName:string, resource:string, action:string):boolean {
+    public isAllowed(groupName: string, resource: string, action: string): boolean {
         if (!(groupName in this.groups)) return this.defaultPolicy == AclPolicy.Allow;
         for (let j = this.groups[groupName].length; j--;) {
             if (this.groups[groupName][j].status) {
@@ -75,13 +75,13 @@ export class Acl {
         return false;
     }
 
-    public update(roles:Array<IRole>, groups:Array<IRoleGroup>) {
+    public update(roles: Array<IRole>, groups: Array<IRoleGroup>) {
         if (!roles || !roles.length) return;
         for (let i = roles.length; i--;) {
             let role = roles[i];
             if (role.status) {
                 for (let j = role.permissions.length; j--;) {
-                    let permission:IPermission = <IPermission>role.permissions[j];
+                    let permission: IPermission = <IPermission>role.permissions[j];
                     if (permission.status) this.allow(role.name, permission.resource, permission.action);
                 }
             }
@@ -95,7 +95,7 @@ export class Acl {
         }
     }
 
-    public addResource(resource:string, action:string) {
+    public addResource(resource: string, action: string) {
         if (!this.resourceList[resource]) {
             this.resourceList[resource] = ['*'];
         }
@@ -109,7 +109,7 @@ export class Acl {
     }
 
     public initAcl() {
-        let updateAclPromise:Array<Promise<any>> = [];
+        let updateAclPromise: Array<Promise<any>> = [];
         // let permissionsToAdd:Array<IPermission> = [],
         //     permissionsToRemove:Array<IPermission> = [];
         return Permission.findByQuery<Permission>(new Vql(Permission.schema.name))
@@ -138,8 +138,8 @@ export class Acl {
                     }
                 }
                 for (let i = result.items.length; i--;) {
-                    let aclResource:string = result.items[i].resource;
-                    let aclAction:string = result.items[i].action;
+                    let aclResource: string = result.items[i].resource;
+                    let aclAction: string = result.items[i].action;
                     if (!resources[aclResource] || resources[aclResource].indexOf(aclAction) < 0) {
                         updateAclPromise.push(new Permission({id: result.items[i].id}).delete())
                         // permissionsToRemove.push({id: result.items[i].id});
@@ -178,8 +178,7 @@ export class Acl {
      * check if the user has access to execute the query or not
      *
      */
-    public hasAccess(query:Vql, user:IUser):boolean {
-        if (user.username == 'root') return true;
-        return false;
+    public hasAccess(query: Vql, user: IUser): boolean {
+        return user.username == 'root';
     }
 }

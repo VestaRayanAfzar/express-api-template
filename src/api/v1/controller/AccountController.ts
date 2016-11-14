@@ -8,14 +8,14 @@ import {Session} from "../../../session/Session";
 import {IRequestResult} from "vesta-util/IRequestResult";
 import {RoleGroup} from "../../../cmn/models/RoleGroup";
 import {Hashing} from "../../../helpers/Hashing";
+import {Permission} from "../../../cmn/models/Permission";
 
 
 export class AccountController extends BaseController {
 
-    public route(router:Router) {
+    public route(router: Router) {
         router.get('/me', this.getMe.bind(this));
-        router.get('/account/list', this.checkAcl('account', 'read'), this.userList.bind(this));
-        router.put('/account', this.checkAcl('account', 'update'), this.update.bind(this));
+        router.put('/account', this.checkAcl('account', Permission.Action.Edit), this.update.bind(this));
         router.post('/account', this.checkAcl('account', 'register'), this.register.bind(this));
         router.post('/account/login', this.checkAcl('account', 'login'), this.login.bind(this));
         router.get('/account/logout', this.checkAcl('account', 'logout'), this.logout.bind(this));
@@ -24,9 +24,9 @@ export class AccountController extends BaseController {
     protected init() {
     }
 
-    public register(req:IExtRequest, res:Response, next:Function) {
+    public register(req: IExtRequest, res: Response, next: Function) {
         var user = new User(req.body),
-            result:IUpsertResult<IUser> = <IUpsertResult<IUser>>{},
+            result: IUpsertResult<IUser> = <IUpsertResult<IUser>>{},
             validationError = user.validate();
         if (validationError) {
             result.error = new ValidationError(validationError);
@@ -49,7 +49,7 @@ export class AccountController extends BaseController {
             .catch(reason=> this.handleError(res, Err.Code.DBInsert, reason.error.message));
     }
 
-    private updateGroupRoles(roleGroups:Array<RoleGroup>):Array<RoleGroup> {
+    private updateGroupRoles(roleGroups: Array<RoleGroup>): Array<RoleGroup> {
         for (var i = roleGroups.length; i--;) {
             if (roleGroups[i]['status']) {
                 roleGroups[i]['roles'] = this.acl.getGroupRoles(roleGroups[i]['name']);
@@ -60,7 +60,7 @@ export class AccountController extends BaseController {
         return roleGroups;
     }
 
-    public login(req:IExtRequest, res:Response, next:Function) {
+    public login(req: IExtRequest, res: Response, next: Function) {
         var user = new User(req.body);
         user.password = Hashing.withSalt(user.password);
         User.findByModelValues<IUser>({username: user.username, password: user.password}, {
@@ -86,8 +86,8 @@ export class AccountController extends BaseController {
 
     }
 
-    public logout(req:IExtRequest, res:Response, next:Function) {
-        var result:IRequestResult<boolean> = <IRequestResult<boolean>>{};
+    public logout(req: IExtRequest, res: Response, next: Function) {
+        var result: IRequestResult<boolean> = <IRequestResult<boolean>>{};
         User.findById<IUser>(this.user(req).id)
             .then(result=> {
                 if (!result.items.length) {
@@ -102,16 +102,16 @@ export class AccountController extends BaseController {
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
-    public getMe(req:IExtRequest, res:Response, next:Function) {
+    public getMe(req: IExtRequest, res: Response, next: Function) {
         var user = this.user(req);
         if (user.id) {
             User.findById<IUser>(user.id, {relations: [{name: 'roleGroups', fields: ['id', 'name', 'status']}]})
-            .then(result=> {
-                result.items[0]['roleGroups'] = this.updateGroupRoles(<Array<RoleGroup>>result.items[0]['roleGroups']);
-                result.items[0].password = '';
-                res.json(result)
-            })
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+                .then(result=> {
+                    result.items[0]['roleGroups'] = this.updateGroupRoles(<Array<RoleGroup>>result.items[0]['roleGroups']);
+                    result.items[0].password = '';
+                    res.json(result)
+                })
+                .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
         } else {
             var guest = <IUser>{
                 username: this.setting.security.guestRoleName,
@@ -124,16 +124,12 @@ export class AccountController extends BaseController {
         }
     }
 
-    public userList(req:IExtRequest, res:IExtRequest, next:Function) {
-
-    }
-
-    public update(req:IExtRequest, res:Response, next:Function) {
+    public update(req: IExtRequest, res: Response, next: Function) {
         var user = new User(req.body),
             validationError = user.validate();
         user.id = this.user(req).id;
         if (validationError) {
-            var result:IUpsertResult<IUser> = <IUpsertResult<IUser>>{};
+            var result: IUpsertResult<IUser> = <IUpsertResult<IUser>>{};
             result.error = new ValidationError(validationError);
             return res.json(result);
         }

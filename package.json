@@ -19,11 +19,11 @@
     "mkdirp": "^0.5.1",
     "morgan": "^1.7.0",
     "node-uuid": "^1.4.7",
-    "vesta-driver-mysql": "^0.4.1",
-    "vesta-driver-redis": "^0.2.7",
-    "vesta-schema": "^0.5.2",
-    "vesta-schema-HLCondition": "0.0.3",
-    "vesta-util": "^0.2.7"
+    "vesta-driver-mysql": "^0.4.6",
+    "vesta-driver-redis": "^0.3.0",
+    "vesta-schema": "^0.5.6",
+    "vesta-schema-HLCondition": "^0.1.0",
+    "vesta-util": "^0.2.8"
   },
   "devDependencies": {
     "fs-extra": "^0.26.7",

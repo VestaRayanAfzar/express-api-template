@@ -16,13 +16,13 @@ import {Redis} from "vesta-driver-redis/Redis";
 var cors = require('cors');
 
 export class ServerApp {
-    private app:express.Express;
-    private server:http.Server;
-    private sessionDatabase:Database;
-    private database:Database;
-    private acl:Acl;
+    private app: express.Express;
+    private server: http.Server;
+    private sessionDatabase: Database;
+    private database: Database;
+    private acl: Acl;
 
-    constructor(private setting:IServerAppSetting) {
+    constructor(private setting: IServerAppSetting) {
         this.app = express();
         this.server = http.createServer(this.app);
         this.server.on('error', err=>console.error(err));
@@ -49,9 +49,9 @@ export class ServerApp {
         this.app.disable('etag');
     }
 
-    private initRouting():Promise<any> {
+    private initRouting(): Promise<any> {
         this.app.use('/asset', express.static(this.setting.dir.upload));
-        this.app.use((req:IExtRequest, res, next)=> {
+        this.app.use((req: IExtRequest, res, next)=> {
             req.sessionDB = this.sessionDatabase;
             sessionMiddleware(req, res, next);
         });
@@ -68,14 +68,14 @@ export class ServerApp {
         });
         // 50x development mode
         if (this.setting.env === 'development') {
-            this.app.use((err:any, req, res, next) => {
+            this.app.use((err: any, req, res, next) => {
                 res.status(err.status || 500);
                 console.log(`internal server error on dev: `, err);
                 res.json({message: err.message, error: err});
             });
         }
         // 50x production mode
-        this.app.use((err:any, req, res, next) => {
+        this.app.use((err: any, req, res, next) => {
             res.status(err.status || 500);
             res.send({
                 message: err.message,
@@ -84,9 +84,9 @@ export class ServerApp {
         });
     }
 
-    private initDatabase():Promise<any> {
+    private initDatabase(): Promise<any> {
         var modelFiles = fs.readdirSync(__dirname + '/cmn/models');
-        var models:IModelCollection = {};
+        var models: IModelCollection = {};
         // creating models list
         for (var i = modelFiles.length; i--;) {
             var modelName = modelFiles[i].slice(0, -3);
@@ -105,7 +105,7 @@ export class ServerApp {
             .then(db=>this.setting.regenerateSchema ? db.init() : db)
     }
 
-    public init():Promise<any> {
+    public init(): Promise<any> {
         this.configExpressServer();
         return this.initDatabase()
             .then(()=> this.initRouting())

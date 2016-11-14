@@ -5,25 +5,25 @@ import {ValidationError} from "vesta-schema/error/ValidationError";
 import {User, IUser} from "../../../cmn/models/User";
 import {IUpsertResult} from "vesta-schema/ICRUDResult";
 import {Vql} from "vesta-schema/Vql";
+import {Permission} from "../../../cmn/models/Permission";
 
 
 export class UserController extends BaseController {
     public route(router: Router) {
-        router.get('/user/count', this.checkAcl('user', 'read'), this.getUsersCount.bind(this));
-        router.get('/user/:id', this.checkAcl('user', 'read'), this.getUser.bind(this));
-        router.get('/user', this.checkAcl('user', 'read'), this.getUsers.bind(this));
-        router.post('/user', this.checkAcl('user', 'create'), this.addUser.bind(this));
-        router.put('/user', this.checkAcl('user', 'update'), this.updateUser.bind(this));
-        router.delete('/user', this.checkAcl('user', 'delete'), this.removeUser.bind(this));
+        router.get('/acl/user/count', this.checkAcl('user', Permission.Action.Read), this.getUsersCount.bind(this));
+        router.get('/acl/user/:id', this.checkAcl('user', Permission.Action.Read), this.getUser.bind(this));
+        router.get('/acl/user', this.checkAcl('user', Permission.Action.Read), this.getUsers.bind(this));
+        router.post('/acl/user', this.checkAcl('user', Permission.Action.Add), this.addUser.bind(this));
+        router.put('/acl/user', this.checkAcl('user', Permission.Action.Edit), this.updateUser.bind(this));
+        router.delete('/acl/user', this.checkAcl('user', Permission.Action.Delete), this.removeUser.bind(this));
     }
 
     protected init() {
-
     }
 
     public getUsersCount(req: IExtRequest, res: Response, next: Function) {
         let query = new Vql('User');
-        query.filter(req.params.query);
+        query.filter(req.query.query);
         User.count(query)
             .then(result=>res.json(result))
             .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
@@ -31,19 +31,32 @@ export class UserController extends BaseController {
 
     public getUser(req: IExtRequest, res: Response, next: Function) {
         User.findById<IUser>(req.params.id)
-            .then(result=> res.json(result))
+            .then(result=> {
+                if (result.items.length) {
+                    delete result.items[0].password;
+                }
+                res.json(result);
+            })
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public getUsers(req: IExtRequest, res: Response, next: Function) {
         var query = new Vql('User')
-            .filter(req.params.query)
-            .limitTo(Math.max(+req.params.limit || 50, 50))
-            .fromPage(+req.params.page || 0);
-
+            .filter(req.query.query)
+            .limitTo(Math.min(+req.query.limit || 50, 50))
+            .fromPage(+req.query.page || 0);
+        if (req.query.orderBy) {
+            let orderBy = req.query.orderBy[0];
+            query.sortBy(orderBy.field, orderBy.ascending == 'true');
+        }
         User.findByQuery(query)
-            .then(result=>res.json(result))
-            .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .then(result=> {
+                if (result.items.length) {
+                    result.items.forEach(item=> delete item.password);
+                }
+                res.json(result)
+            })
+            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
     public addUser(req: IExtRequest, res: Response, next: Function) {

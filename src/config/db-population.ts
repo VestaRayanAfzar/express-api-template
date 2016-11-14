@@ -6,25 +6,25 @@ import {setting} from "./setting";
 import {Hashing} from "../helpers/Hashing";
 
 export function populate() {
-    var adminPromise = Permission.findByModelValues({resource: '*', action: '*'})
+    var rootPromise = Permission.findByModelValues({resource: '*', action: '*'})
         .then(result=> {
             return (new Role({
-                name: setting.security.adminRoleName,
-                desc: 'Admin role',
+                name: setting.security.rootRoleName,
+                desc: 'Root role',
                 permissions: [result.items[0]['id']]
             })).insert<IRole>()
         })
         .then(result=> {
             return (new RoleGroup({
-                name: setting.security.adminRoleName,
-                desc: 'Admin Role Group',
+                name: setting.security.rootRoleName,
+                desc: 'Root Role Group',
                 roles: [result.items[0].id]
             })).insert<IRoleGroup>()
         })
         .then(result=> {
             return (new User({
                 username: 'root',
-                password: Hashing.withSalt('tntfx256'),
+                password: Hashing.withSalt('toor4L!fe'),
                 roleGroups: [result.items[0]['id']]
             })).insert();
         });
@@ -49,5 +49,5 @@ export function populate() {
             })).insert<IRoleGroup>();
         });
 
-    return Promise.all([adminPromise, guestPromise]);
+    return Promise.all([rootPromise, guestPromise]);
 }

@@ -9,45 +9,45 @@ import {Vql} from "vesta-schema/Vql";
 
 export class PermissionController extends BaseController {
 
-    public route(router:Router) {
-        router.get('/permission/count', this.checkAcl('acl.permission', 'read'), this.getPermissionsCount.bind(this));
-        router.get('/permission/:id', this.checkAcl('acl.permission', 'read'), this.getPermission.bind(this));
-        router.get('/permission', this.checkAcl('acl.permission', 'read'), this.getPermissions.bind(this));
-        router.put('/permission', this.checkAcl('acl.permission', 'update'), this.updatePermission.bind(this));
+    public route(router: Router) {
+        router.get('/permission/count', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermissionsCount.bind(this));
+        router.get('/permission/:id', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermission.bind(this));
+        router.get('/permission', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermissions.bind(this));
+        router.put('/permission', this.checkAcl('acl.permission', Permission.Action.Edit), this.updatePermission.bind(this));
     }
 
     protected init() {
 
     }
 
-    public getPermission(req:IExtRequest, res:Response, next:Function) {
+    public getPermission(req: IExtRequest, res: Response, next: Function) {
         Permission.findById<IPermission>(req.params.id)
             .then(result=> res.json(result))
             .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
-    public getPermissionsCount(req:IExtRequest, res:Response, next:Function) {
+    public getPermissionsCount(req: IExtRequest, res: Response, next: Function) {
         var query = new Vql('Permission');
-        query.filter(req.params.query);
+        query.filter(req.query.query);
         Permission.count(query)
             .then(result=>res.json(result))
             .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
-    public getPermissions(req:IExtRequest, res:Response, next:Function) {
+    public getPermissions(req: IExtRequest, res: Response, next: Function) {
         var query = new Vql('Permission');
-        query.filter(req.params.query);
+        query.filter(req.query.query);
         Permission.findByQuery(query)
             .then(result=>res.json(result))
             .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
     }
 
 
-    public updatePermission(req:IExtRequest, res:Response, next:Function) {
+    public updatePermission(req: IExtRequest, res: Response, next: Function) {
         var permission = new Permission(req.body),
             validationError = permission.validate();
         if (validationError) {
-            var result:IUpsertResult<IPermission> = <IUpsertResult<IPermission>>{};
+            var result: IUpsertResult<IPermission> = <IUpsertResult<IPermission>>{};
             result.error = new ValidationError(validationError);
             return res.json(result);
         }

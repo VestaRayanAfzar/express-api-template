@@ -3,27 +3,27 @@ import {IDatabaseConfig} from "vesta-schema/Database";
 var env = process.env;
 
 export interface IServerAppSetting {
-    env:string;
-    version:{app:string; api:string};
-    regenerateSchema:boolean;
-    database:IDatabaseConfig;
-    port:number;
-    dir:{upload:string};
-    security:{
-        secret:string;
-        salt:string;
-        hashing:string;
-        guestRoleName:string;
-        adminRoleName:string;
-        session:{
-            idPrefix:string;
-            hashing:string;
-            database:IDatabaseConfig
+    env: string;
+    version: {app: string; api: string};
+    regenerateSchema: boolean;
+    database: IDatabaseConfig;
+    port: number;
+    dir: {upload: string};
+    security: {
+        secret: string;
+        salt: string;
+        hashing: string;
+        guestRoleName: string;
+        rootRoleName: string;
+        session: {
+            idPrefix: string;
+            hashing: string;
+            database: IDatabaseConfig
         };
     }
 }
 
-export const setting:IServerAppSetting = {
+export const setting: IServerAppSetting = {
     env: env.NODE_ENV,
     version: {
         app: '0.1.0',
@@ -47,7 +47,7 @@ export const setting:IServerAppSetting = {
         salt: env.SALT,
         hashing: 'sha256',
         guestRoleName: 'guest',
-        adminRoleName: 'admin',
+        rootRoleName: 'root',
         session: {
             idPrefix: 'sess:',
             hashing: 'HS256',

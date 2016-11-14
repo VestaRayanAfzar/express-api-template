@@ -1,6 +1,7 @@
 .idea
 npm-debug*
 tsd-debug*
+yarn-error*
 /build
 /node_modules
 /resources/tsd
