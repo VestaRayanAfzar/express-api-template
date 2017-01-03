@@ -3,9 +3,9 @@ import {BaseController, IExtRequest} from "../../../BaseController";
 import {Err} from "vesta-util/Err";
 import {ValidationError} from "vesta-schema/error/ValidationError";
 import {RoleGroup, IRoleGroup} from "../../../../cmn/models/RoleGroup";
-import {IUpsertResult} from "vesta-schema/ICRUDResult";
 import {Vql} from "vesta-schema/Vql";
 import {Permission} from "../../../../cmn/models/Permission";
+import {DatabaseError} from "vesta-schema/error/DatabaseError";
 
 
 export class RoleGroupController extends BaseController {
@@ -19,74 +19,66 @@ export class RoleGroupController extends BaseController {
     }
 
     protected init() {
-
     }
 
-    public getRoleGroup(req: IExtRequest, res: Response, next: Function) {
+    public getRoleGroup(req: IExtRequest, res: Response) {
         RoleGroup.findById<IRoleGroup>(req.params.id, {relations: ['roles']})
-            .then(result=> res.json(result))
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .then(result => res.json(result))
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public getRoleGroups(req: IExtRequest, res: Response, next: Function) {
-        var query = new Vql('RoleGroup');
-        query.filter(req.query.query);
+    public getRoleGroups(req: IExtRequest, res: Response) {
+        let query = req.query.query,
+            roleGroup = new RoleGroup(query),
+            validationError = roleGroup.validate(...Object.keys(query));
+        if (validationError) {
+            return this.handleError(req, res, new ValidationError(validationError))
+        }
+        let query = new Vql('RoleGroup');
+        query.filter(query);
         RoleGroup.findByQuery(query)
-            .then(result=>res.json(result))
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .then(result => res.json(result))
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public addRoleGroup(req: IExtRequest, res: Response, next: Function) {
-        var roleGroup = new RoleGroup(req.body),
+    public addRoleGroup(req: IExtRequest, res: Response) {
+        let roleGroup = new RoleGroup(req.body),
             validationError = roleGroup.validate();
         if (validationError) {
-            var result: IUpsertResult<IRoleGroup> = <IUpsertResult<IRoleGroup>>{};
-            result.error = new ValidationError(validationError);
-            this.acl.initAcl();
-            return res.json(result);
+            return this.handleError(req, res, new ValidationError(validationError));
         }
         roleGroup.insert<IRoleGroup>()
-            .then(result=> res.json(result))
-            .catch(reason=> this.handleError(res, Err.Code.DBInsert, reason.error.message));
+            .then(result => res.json(result))
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public updateRoleGroup(req: IExtRequest, res: Response, next: Function) {
-        var roleGroup = new RoleGroup(req.body),
+    public updateRoleGroup(req: IExtRequest, res: Response) {
+        let roleGroup = new RoleGroup(req.body),
             validationError = roleGroup.validate();
         if (validationError) {
-            var result: IUpsertResult<IRoleGroup> = <IUpsertResult<IRoleGroup>>{};
-            result.error = new ValidationError(validationError);
-            return res.json(result);
+            return this.handleError(req, res, new ValidationError(validationError));
         }
         RoleGroup.findById<IRoleGroup>(roleGroup.id)
-            .then(result=> {
-                if (result.items.length == 1) return roleGroup.update().then(result=> {
-                    this.acl.initAcl();
-                    res.json(result);
-                });
-                this.handleError(res, Err.Code.DBUpdate);
+            .then(result => {
+                if (result.items.length == 1) {
+                    return roleGroup.update()
+                        .then(result => {
+                            this.acl.initAcl();
+                            res.json(result);
+                        });
+                }
+                throw new DatabaseError(result.items.length ? Err.Code.DBRecordCount : Err.Code.DBNoRecord);
             })
-            .catch(reason=> this.handleError(res, Err.Code.DBUpdate, reason.error.message));
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public removeRoleGroup(req: IExtRequest, res: Response, next: Function) {
-        RoleGroup.findById(+req.params.id)
-            .then(result=> {
-                if (!result.items.length) return this .handleError(res, Err.Code.DBQuery, 'Record not found');
-                let roleGroupName = result.items[0].name;
-                let security = this.setting.security;
-                if (roleGroupName == security.rootRoleName || roleGroupName == security.guestRoleName) {
-                    return this.handleError(res, Err.Code.Forbidden, 'admin and guest roleGroups are required');
-                }
-                var roleGroup = new RoleGroup({id: +req.params.id});
-                roleGroup.delete()
-                    .then(result=> {
-                        this.acl.initAcl();
-                        res.json(result);
-                    })
-                    .catch(reason=> this.handleError(res, Err.Code.DBDelete, reason.error.message));
+    public removeRoleGroup(req: IExtRequest, res: Response) {
+        let roleGroup = new RoleGroup({id: req.params.id});
+        roleGroup.delete()
+            .then(result => {
+                result.items.length && this.acl.initAcl();
+                res.json(result);
             })
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
-
+            .catch(error => this.handleError(req, res, error));
     }
 }

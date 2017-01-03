@@ -3,12 +3,13 @@ import {BaseController, IExtRequest} from "../../BaseController";
 import {Err} from "vesta-util/Err";
 import {ValidationError} from "vesta-schema/error/ValidationError";
 import {User, IUser} from "../../../cmn/models/User";
-import {IUpsertResult, IQueryResult} from "vesta-schema/ICRUDResult";
+import {IQueryResult} from "vesta-schema/ICRUDResult";
 import {Session} from "../../../session/Session";
-import {IRequestResult} from "vesta-util/IRequestResult";
-import {RoleGroup} from "../../../cmn/models/RoleGroup";
+import {RoleGroup, IRoleGroup} from "../../../cmn/models/RoleGroup";
 import {Hashing} from "../../../helpers/Hashing";
 import {Permission} from "../../../cmn/models/Permission";
+import {Status} from "../../../cmn/enum/Status";
+import {DatabaseError} from "vesta-schema/error/DatabaseError";
 
 
 export class AccountController extends BaseController {
@@ -24,35 +25,10 @@ export class AccountController extends BaseController {
     protected init() {
     }
 
-    public register(req: IExtRequest, res: Response, next: Function) {
-        var user = new User(req.body),
-            result: IUpsertResult<IUser> = <IUpsertResult<IUser>>{},
-            validationError = user.validate();
-        if (validationError) {
-            result.error = new ValidationError(validationError);
-            return res.json(result);
-        }
-        user.password = Hashing.withSalt(user.password);
-        user.insert<User>()
-            .then(result=> {
-                result.items[0].password = '';
-                user.setValues(result.items[0]);
-                req.session && req.session.destroy();
-                Session.createSession(req.sessionDB, this.setting.security.session.idPrefix, {}, res)
-                    .then(session=> {
-                        req.session = session;
-                        req.session.set('user', user.getValues());
-                        res.json(result);
-                    })
-
-            })
-            .catch(reason=> this.handleError(res, Err.Code.DBInsert, reason.error.message));
-    }
-
-    private updateGroupRoles(roleGroups: Array<RoleGroup>): Array<RoleGroup> {
-        for (var i = roleGroups.length; i--;) {
-            if (roleGroups[i]['status']) {
-                roleGroups[i]['roles'] = this.acl.getGroupRoles(roleGroups[i]['name']);
+    private updateGroupRoles(roleGroups: Array<IRoleGroup>): Array<IRoleGroup> {
+        for (let i = roleGroups.length; i--;) {
+            if (roleGroups[i].status) {
+                roleGroups[i].roles = this.acl.getGroupRoles(roleGroups[i].name);
             } else {
                 roleGroups.slice(i)
             }
@@ -60,84 +36,105 @@ export class AccountController extends BaseController {
         return roleGroups;
     }
 
-    public login(req: IExtRequest, res: Response, next: Function) {
-        var user = new User(req.body);
+    public register(req: IExtRequest, res: Response) {
+        let user = new User(req.body),
+            validationError = user.validate();
+        if (validationError) {
+            return this.handleError(req, res, new ValidationError(validationError));
+        }
+        user.password = Hashing.withSalt(user.password);
+        user.insert<IUser>()
+            .then(result => {
+                result.items[0].password = '';
+                user.setValues(result.items[0]);
+                req.session && req.session.destroy();
+                Session.create()
+                    .then(session => {
+                        req.session = session;
+                        req.session.set('user', user.getValues());
+                        res.json(result);
+                    })
+            })
+            .catch(error => this.handleError(req, res, error));
+    }
+
+    public login(req: IExtRequest, res: Response) {
+        let user = new User(req.body),
+            validationError = user.validate('username', 'password');
+        if (validationError) {
+            return this.handleError(req, res, new ValidationError(validationError))
+        }
         user.password = Hashing.withSalt(user.password);
         User.findByModelValues<IUser>({username: user.username, password: user.password}, {
             relations: [{
                 name: 'roleGroups',
                 fields: ['id', 'name', 'status']
             }]
-        }).then(result=> {
-            if (!result.items.length) {
-                return res.json(result);
-            }
-            result.items[0]['roleGroups'] = this.updateGroupRoles(<Array<RoleGroup>>result.items[0]['roleGroups']);
-            result.items[0].password = '';
-            user.setValues(result.items[0]);
-            req.session && req.session.destroy();
-            Session.createSession(req.sessionDB, this.setting.security.session.idPrefix, {}, res)
-                .then(session=> {
-                    req.session = session;
-                    req.session.set('user', user.getValues());
-                    res.json(result);
-                })
-        }).catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
-
-    }
-
-    public logout(req: IExtRequest, res: Response, next: Function) {
-        var result: IRequestResult<boolean> = <IRequestResult<boolean>>{};
-        User.findById<IUser>(this.user(req).id)
-            .then(result=> {
+        })
+            .then(result => {
                 if (!result.items.length) {
-                    return Promise.reject(new Error('logout failed'));
+                    return res.json(result);
                 }
-            })
-            .then(data=> {
+                result.items[0].roleGroups = this.updateGroupRoles(<Array<RoleGroup>>result.items[0].roleGroups);
+                result.items[0].password = '';
+                user.setValues(result.items[0]);
                 req.session && req.session.destroy();
-                Session.createSession(req.sessionDB, this.setting.security.session.idPrefix, {}, res)
-                    .then(session=> this.getMe(req, res, next))
+                Session.create(req.body.rememberMe)
+                    .then(session => {
+                        req.session = session;
+                        req.session.set('user', user.getValues());
+                        res.json(result);
+                    })
             })
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public getMe(req: IExtRequest, res: Response, next: Function) {
-        var user = this.user(req);
+    public logout(req: IExtRequest, res: Response) {
+        User.findById<IUser>(this.user(req).id)
+            .then(result => {
+                if (!result.items.length) throw new DatabaseError(Err.Code.DBNoRecord);
+                req.session && req.session.destroy();
+                return Session.create()
+            })
+            .then(session => this.getMe(req, res))
+            .catch(error => this.handleError(req, res, error));
+    }
+
+    public getMe(req: IExtRequest, res: Response) {
+        let user = this.user(req);
         if (user.id) {
             User.findById<IUser>(user.id, {relations: [{name: 'roleGroups', fields: ['id', 'name', 'status']}]})
-                .then(result=> {
-                    result.items[0]['roleGroups'] = this.updateGroupRoles(<Array<RoleGroup>>result.items[0]['roleGroups']);
+                .then(result => {
+                    result.items[0].roleGroups = this.updateGroupRoles(<Array<RoleGroup>>result.items[0].roleGroups);
                     result.items[0].password = '';
-                    res.json(result)
+                    res.json(result);
                 })
-                .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+                .catch(error => this.handleError(req, res, error));
         } else {
-            var guest = <IUser>{
-                username: this.setting.security.guestRoleName,
-                roleGroups: this.updateGroupRoles(<Array<RoleGroup>>[{
-                    status: true,
-                    name: this.setting.security.guestRoleName
+            let securitySetting = this.setting.security;
+            let guest = <IUser>{
+                username: securitySetting.guestRoleName,
+                roleGroups: this.updateGroupRoles([<IRoleGroup>{
+                    status: Status.Active,
+                    name: securitySetting.guestRoleName
                 }])
             };
             res.json(<IQueryResult<IUser>>{items: [guest]});
         }
     }
 
-    public update(req: IExtRequest, res: Response, next: Function) {
-        var user = new User(req.body),
+    public update(req: IExtRequest, res: Response) {
+        let user = new User(req.body),
             validationError = user.validate();
         user.id = this.user(req).id;
         if (validationError) {
-            var result: IUpsertResult<IUser> = <IUpsertResult<IUser>>{};
-            result.error = new ValidationError(validationError);
-            return res.json(result);
+            return this.handleError(req, res, new ValidationError(validationError));
         }
         User.findById<IUser>(user.id)
-            .then(result=> {
-                if (result.items.length == 1) return user.update<IUser>().then(result=>res.json(result));
-                this.handleError(res, Err.Code.DBUpdate);
+            .then(result => {
+                if (result.items.length == 1) return user.update<IUser>().then(result => res.json(result));
+                throw new DatabaseError(result.items.length ? Err.Code.DBRecordCount : Err.Code.DBNoRecord);
             })
-            .catch(reason=> this.handleError(res, Err.Code.DBUpdate, reason.error.message));
+            .catch(error => this.handleError(req, res, error));
     }
 }

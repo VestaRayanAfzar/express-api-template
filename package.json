@@ -1,7 +1,8 @@
 {
   "name": "expressJsTemplate",
   "description": "Proveided by Vesta Rayan Afzar",
-  "version": "0.3.2",
+  "version": "0.5.0-beta.1",
+  "license": "",
   "repository": {
     "type": "git",
     "url": "https://github.com/VestaRayanAfzar/expressJsTemplate.git"
@@ -12,27 +13,30 @@
   },
   "dependencies": {
     "body-parser": "^1.15.2",
-    "cors": "^2.7.1",
+    "cors": "^2.8.1",
     "express": "^4.14.0",
     "formidable": "^1.0.17",
-    "jsonwebtoken": "^7.1.7",
+    "helmet": "^3.3.0",
+    "jsonwebtoken": "^7.2.1",
     "mkdirp": "^0.5.1",
     "morgan": "^1.7.0",
     "node-uuid": "^1.4.7",
-    "vesta-driver-mysql": "^0.4.6",
+    "vesta-driver-mysql": "^0.4.10-beta.3",
     "vesta-driver-redis": "^0.3.0",
-    "vesta-schema": "^0.5.6",
-    "vesta-schema-HLCondition": "^0.1.0",
-    "vesta-util": "^0.2.8"
+    "vesta-i18n": "^0.3.3",
+    "vesta-schema": "^0.6.0-beta.1",
+    "vesta-schema-HLCondition": "^0.1.1-beta.1",
+    "vesta-util": "^0.3.2"
   },
   "devDependencies": {
-    "fs-extra": "^0.26.7",
+    "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
-    "gulp-develop-server": "^0.5.0",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-typescript": "^2.13.6",
-    "jasmine-core": "^2.4.1",
+    "gulp-develop-server": "^0.5.2",
+    "gulp-sourcemaps": "^1.9.1",
+    "gulp-typescript": "^3.1.3",
+    "jasmine-core": "^2.5.2",
     "jasmine-node": "^1.14.5",
-    "request": "^2.74.0"
+    "request": "^2.79.0",
+    "typescript": "^2.1.4"
   }
 }

@@ -1,33 +1,33 @@
 import {Session} from "../session/Session";
 import {JWT} from "../helpers/JWT";
-import {setting} from "../config/setting";
+import {IExtRequest} from "../api/BaseController";
+import {Response, NextFunction} from "express";
 
-var sessionIdPrefix = setting.security.session.idPrefix;
+export function sessionMiddleware(req: IExtRequest, res: Response, next: NextFunction) {
+    let token = req.get('X-Auth-Token');
+    if (!token) return newSession();
+    JWT.verify(token, (err, payload) => err ? newSession() : restoreSession(payload.sessionId));
 
-export function sessionMiddleware(req, res, next) {
-    var token = req.get('X-Auth-Token');
-    if (!token) return createSession();
+    function newSession() {
+        Session.create()
+            .then(session => {
+                // console.log('new session created', session.sessionData);
+                let token = JWT.sign({sessionId: session.sessionId});
+                res.set('X-Auth-Token', token);
+                req.session = session;
+                next();
+            });
+    }
 
-    JWT.verify(token, function (err, payload) {
-        if (err) {
-            return createSession();
-            // console.log('Invalid token', token);
-        }
-        var dbSessionId = sessionIdPrefix + payload.sessionId;
-        req.sessionDB.findById(dbSessionId)
-            .then(data=> {
-                if (!data.error && data.items.length) {
-                    req.session = new Session(dbSessionId, data.items[0], req.sessionDB);
-                    return next();
+    function restoreSession(sessionId: string) {
+        Session.restore(sessionId)
+            .then(session => {
+                if (!session) {
+                    // session has been expired
+                    return newSession();
                 }
-                // console.log('sessionId not found', payload.sessionId);
-                    return createSession();
-        })
-    });
-
-    function createSession() {
-        Session.createSession(req.sessionDB, sessionIdPrefix, {}, res)
-            .then(session=> {
+                // console.log('session verified', session.sessionData);
+                res.set('X-Auth-Token', token);
                 req.session = session;
                 next();
             });

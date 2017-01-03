@@ -1,4 +1,4 @@
-var gulp = require('gulp'),
+let gulp = require('gulp'),
     path = require('path'),
     ts = require('gulp-typescript'),
     map = require('gulp-sourcemaps'),
@@ -7,14 +7,14 @@ var gulp = require('gulp'),
 module.exports = function (dir, setting) {
 
     gulp.task('ts:compile', function () {
-        var tsFiles = [dir.src + '/**/*.ts', dir.typescriptLibrary + '/**/*.ts'];
+        let tsFiles = [dir.src + '/**/*.ts', dir.typescriptLibrary + '/**/*.ts'];
         if (setting.production) {
             tsFiles.push('!' + dir.src + '/test/**');
         }
-        var genSourceMap = !setting.production,
+        let genSourceMap = !setting.production,
             stream = gulp.src(tsFiles);
         if (genSourceMap) stream = stream.pipe(map.init());
-        var tsResult = stream.pipe(ts({
+        let tsResult = stream.pipe(ts({
             target: 'ES5',
             module: 'commonjs',
             removeComments: true
@@ -43,7 +43,7 @@ module.exports = function (dir, setting) {
     function findInFileAndReplace(file, search, replace) {
         try {
             if (!fse.existsSync(file)) return;
-            var content = fse.readFileSync(file, {encoding: 'utf8'});
+            let content = fse.readFileSync(file, {encoding: 'utf8'});
             content = content.replace(search, replace);
             fse.writeFileSync(file, content);
         } catch (e) {

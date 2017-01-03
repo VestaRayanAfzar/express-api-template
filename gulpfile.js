@@ -1,9 +1,9 @@
-var gulp = require('gulp'),
+let gulp = require('gulp'),
     path = require('path'),
     fse = require('fs-extra');
 
-var root = __dirname;
-var dir = {
+let root = __dirname;
+let dir = {
     root: root,
     resource: path.join(root, 'resources'),
     docker: path.join(root, 'resources/docker'),
@@ -14,15 +14,15 @@ var dir = {
     buildServer: path.join(root, 'build/app')
 };
 
-var modules = ['ts'],
+let modules = ['ts'],
     tasks = [],
     watches = [],
     setting = {
         production: false
     };
 
-for (var i = 0, il = modules.length; i < il; ++i) {
-    var result = require(path.join(dir.gulp, modules[i]))(dir, setting);
+for (let i = 0, il = modules.length; i < il; ++i) {
+    let result = require(path.join(dir.gulp, modules[i]))(dir, setting);
     if (result.tasks) {
         tasks = tasks.concat(result.tasks);
     }
