@@ -30,7 +30,7 @@
       "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
     },
     "node/node.d.ts": {
-      "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
+      "commit": "f5ab2df94e1aabf0fc6d783ad01c4c4671760627"
     },
     "morgan/morgan.d.ts": {
       "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
@@ -52,6 +52,9 @@
     },
     "express-serve-static-core/express-serve-static-core.d.ts": {
       "commit": "e65947027120a0dc77723266906e4ce6c28bd725"
+    },
+    "mysql/mysql.d.ts": {
+      "commit": "f5ab2df94e1aabf0fc6d783ad01c4c4671760627"
     }
   }
 }

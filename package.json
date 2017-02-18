@@ -21,6 +21,7 @@
     "node-uuid": "^1.4.7",
     "vesta-driver-mysql": "^0.4.6",
     "vesta-driver-redis": "^0.3.0",
+    "vesta-i18n": "^0.3.3",
     "vesta-schema": "^0.5.6",
     "vesta-schema-HLCondition": "^0.1.0",
     "vesta-util": "^0.2.8"

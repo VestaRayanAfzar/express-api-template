@@ -6,9 +6,10 @@ import {User, IUser} from "../../../cmn/models/User";
 import {IUpsertResult, IQueryResult} from "vesta-schema/ICRUDResult";
 import {Session} from "../../../session/Session";
 import {IRequestResult} from "vesta-util/IRequestResult";
-import {RoleGroup} from "../../../cmn/models/RoleGroup";
+import {RoleGroup, IRoleGroup} from "../../../cmn/models/RoleGroup";
 import {Hashing} from "../../../helpers/Hashing";
 import {Permission} from "../../../cmn/models/Permission";
+import {Status} from "../../../cmn/enum/Status";
 
 
 export class AccountController extends BaseController {
@@ -116,7 +117,7 @@ export class AccountController extends BaseController {
             var guest = <IUser>{
                 username: this.setting.security.guestRoleName,
                 roleGroups: this.updateGroupRoles(<Array<RoleGroup>>[{
-                    status: true,
+                    status: Status.Active,
                     name: this.setting.security.guestRoleName
                 }])
             };

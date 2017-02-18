@@ -49,7 +49,7 @@ export class UserController extends BaseController {
             let orderBy = req.query.orderBy[0];
             query.sortBy(orderBy.field, orderBy.ascending == 'true');
         }
-        User.findByQuery(query)
+        User.findByQuery<IUser>(query)
             .then(result=> {
                 if (result.items.length) {
                     result.items.forEach(item=> delete item.password);

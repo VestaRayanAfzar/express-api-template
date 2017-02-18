@@ -70,7 +70,7 @@ export class RoleGroupController extends BaseController {
     }
 
     public removeRoleGroup(req: IExtRequest, res: Response, next: Function) {
-        RoleGroup.findById(+req.params.id)
+        RoleGroup.findById<IRoleGroup>(+req.params.id)
             .then(result=> {
                 if (!result.items.length) return this .handleError(res, Err.Code.DBQuery, 'Record not found');
                 let roleGroupName = result.items[0].name;
