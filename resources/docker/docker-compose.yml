@@ -37,6 +37,7 @@ services:
     command: pm2 start app.js --no-daemon
     environment:
       NODE_ENV: production
+      LOG_LEVEL: 2
       PORT: 3000
       SDB_PROTOCOL: redis
       SDB_HOST: session

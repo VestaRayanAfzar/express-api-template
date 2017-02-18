@@ -3,66 +3,60 @@ import {BaseController, IExtRequest} from "../../../BaseController";
 import {Err} from "vesta-util/Err";
 import {ValidationError} from "vesta-schema/error/ValidationError";
 import {Permission, IPermission} from "../../../../cmn/models/Permission";
-import {IUpsertResult} from "vesta-schema/ICRUDResult";
 import {Vql} from "vesta-schema/Vql";
+import {DatabaseError} from "vesta-schema/error/DatabaseError";
 
 
 export class PermissionController extends BaseController {
 
     public route(router: Router) {
-        router.get('/permission/count', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermissionsCount.bind(this));
-        router.get('/permission/:id', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermission.bind(this));
-        router.get('/permission', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermissions.bind(this));
-        router.put('/permission', this.checkAcl('acl.permission', Permission.Action.Edit), this.updatePermission.bind(this));
+        router.get('/acl/permission/:id', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermission.bind(this));
+        router.get('/acl/permission', this.checkAcl('acl.permission', Permission.Action.Read), this.getPermissions.bind(this));
+        router.put('/acl/permission', this.checkAcl('acl.permission', Permission.Action.Edit), this.updatePermission.bind(this));
     }
 
     protected init() {
-
     }
 
-    public getPermission(req: IExtRequest, res: Response, next: Function) {
+    public getPermission(req: IExtRequest, res: Response) {
         Permission.findById<IPermission>(req.params.id)
-            .then(result=> res.json(result))
-            .catch(reason=> this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .then(result => res.json(result))
+            .catch(error => this.handleError(req, res, error));
     }
 
-    public getPermissionsCount(req: IExtRequest, res: Response, next: Function) {
-        var query = new Vql('Permission');
-        query.filter(req.query.query);
-        Permission.count(query)
-            .then(result=>res.json(result))
-            .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
-    }
-
-    public getPermissions(req: IExtRequest, res: Response, next: Function) {
-        var query = new Vql('Permission');
+    public getPermissions(req: IExtRequest, res: Response) {
+        let query = req.query.query,
+            permission = new Permission(query),
+            validationError = permission.validate(...Object.keys(query));
+        if (validationError) {
+            return this.handleError(req, res, new ValidationError(validationError))
+        }
+        let query = new Vql('Permission');
         query.filter(req.query.query);
         Permission.findByQuery(query)
-            .then(result=>res.json(result))
-            .catch(reason=>this.handleError(res, Err.Code.DBQuery, reason.error.message));
+            .then(result => res.json(result))
+            .catch(error => this.handleError(req, res, error));
     }
 
-
-    public updatePermission(req: IExtRequest, res: Response, next: Function) {
-        var permission = new Permission(req.body),
+    public updatePermission(req: IExtRequest, res: Response) {
+        let permission = new Permission(req.body),
             validationError = permission.validate();
         if (validationError) {
-            var result: IUpsertResult<IPermission> = <IUpsertResult<IPermission>>{};
-            result.error = new ValidationError(validationError);
-            return res.json(result);
+            return this.handleError(req, res, new ValidationError(validationError));
         }
         Permission.findById<IPermission>(permission.id)
-            .then(result=> {
+            .then(result => {
                 if (result.items.length == 1) {
                     result.items[0].status = permission.status;
                     permission.setValues(result.items[0]);
-                    return permission.update().then(result=> {
-                        this.acl.initAcl();
-                        res.json(result);
-                    });
+                    return permission.update()
+                        .then(result => {
+                            this.acl.initAcl();
+                            res.json(result);
+                        });
                 }
-                this.handleError(res, Err.Code.DBUpdate);
+                throw new DatabaseError(result.items.length ? Err.Code.DBRecordCount : Err.Code.DBNoRecord);
             })
-            .catch(reason=> this.handleError(res, Err.Code.DBUpdate, reason.error.message));
+            .catch(error => this.handleError(req, res, error));
     }
 }

@@ -12,8 +12,11 @@ import {Acl, AclPolicy} from "./helpers/Acl";
 import {Err} from "vesta-util/Err";
 import {DatabaseFactory} from "./helpers/DatabaseFactory";
 import {MySQL} from "vesta-driver-mysql/MySQL";
-import {Redis} from "vesta-driver-redis/Redis";
-var cors = require('cors');
+import {loggerMiddleware} from "./middlewares/logger";
+import {LogFactory, LogStorage} from "./helpers/LogFactory";
+import {Session} from "./session/Session";
+let cors = require('cors');
+let helmet = require('helmet');
 
 export class ServerApp {
     private app: express.Express;
@@ -25,22 +28,36 @@ export class ServerApp {
     constructor(private setting: IServerAppSetting) {
         this.app = express();
         this.server = http.createServer(this.app);
-        this.server.on('error', err=>console.error(err));
-        this.server.on('listening', arg=>console.log(arg));
-        this.acl = new Acl(AclPolicy.Deny);
+        this.server.on('error', err => console.error(err));
+        this.server.on('listening', arg => console.log(arg));
+        this.acl = new Acl(setting, AclPolicy.Deny);
+        this.setting.log.storage = this.setting.env == 'development' ? LogStorage.Console : LogStorage.File;
+        if (!LogFactory.init(this.setting.log)) {
+            process.exit(1);
+        }
     }
 
     private configExpressServer() {
+        this.app.use(helmet({
+            noCache: true,
+            referrerPolicy: true
+        }));
+        // todo CHANGE origin in production mode based on your requirement
         this.app.use(cors({
             origin: [/https?:\/\/*:*/],
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: ['X-Requested-With', 'Content-Type', 'Content-Length', 'X-Auth-Token', 'X-Auth-User'],
             exposedHeaders: ['Content-Type', 'Content-Length', 'X-Auth-Token']
         }));
-        //noinspection TypeScriptValidateTypes
+        this.app.use(loggerMiddleware);
         this.app.use(morgan(this.setting.env == 'development' ? 'dev' : 'combined'));
         this.app.use(bodyParser.urlencoded({limit: '50mb', extended: false}));
         this.app.use(bodyParser.json({limit: '50mb'}));
+        // closing connection after sending response ???
+        this.app.use((req: IExtRequest, res: express.Response, next: express.NextFunction) => {
+            res.set('Connection', 'Close');
+            next();
+        });
 
         this.app.enable('trust proxy');
         this.app.disable('case sensitive routing');
@@ -51,19 +68,19 @@ export class ServerApp {
 
     private initRouting(): Promise<any> {
         this.app.use('/asset', express.static(this.setting.dir.upload));
-        this.app.use((req: IExtRequest, res, next)=> {
+        this.app.use((req: IExtRequest, res, next) => {
             req.sessionDB = this.sessionDatabase;
             sessionMiddleware(req, res, next);
         });
         return ApiFactory.create(this.setting, this.acl, this.database)
-            .then(routing=> this.app.use('/', routing));
+            .then(routing => this.app.use('/', routing));
     }
 
     private initErrorHandlers() {
         // 404
         this.app.use((req, res, next) => {
             res.status(404);
-            var err = new Err(404, 'Not Found');
+            let err = new Err(404, 'Not Found');
             res.json({error: err});
         });
         // 50x development mode
@@ -85,31 +102,27 @@ export class ServerApp {
     }
 
     private initDatabase(): Promise<any> {
-        var modelFiles = fs.readdirSync(__dirname + '/cmn/models');
-        var models: IModelCollection = {};
+        let modelFiles = fs.readdirSync(__dirname + '/cmn/models');
+        let models: IModelCollection = {};
         // creating models list
-        for (var i = modelFiles.length; i--;) {
-            var modelName = modelFiles[i].slice(0, -3);
-            var model = require('./cmn/models/' + modelFiles[i]);
+        for (let i = modelFiles.length; i--;) {
+            let modelName = modelFiles[i].slice(0, -3);
+            let model = require('./cmn/models/' + modelFiles[i]);
             models[model[modelName]['schema']['name']] = model[modelName];
         }
         // registering database drivers
         DatabaseFactory.register('appDatabase', this.setting.database, MySQL, models);
-        DatabaseFactory.register('sesDatabase', this.setting.security.session.database, Redis);
-        // getting session database instance
-        return DatabaseFactory.getInstance('sesDatabase')
-            .then(connection=> {
-                this.sessionDatabase = connection;
-            })
-            .then(()=>DatabaseFactory.getInstance('appDatabase'))
-            .then(db=>this.setting.regenerateSchema ? db.init() : db)
+        // getting application database instance
+        return DatabaseFactory.getInstance('appDatabase')
+            .then(db => this.setting.regenerateSchema ? db.init() : db)
     }
 
     public init(): Promise<any> {
         this.configExpressServer();
-        return this.initDatabase()
-            .then(()=> this.initRouting())
-            .then(()=> {
+        return Session.init(this.setting.security.session)
+            .then(() => this.initDatabase())
+            .then(() => this.initRouting())
+            .then(() => {
                 this.initErrorHandlers();
                 return this.acl.initAcl();
             })

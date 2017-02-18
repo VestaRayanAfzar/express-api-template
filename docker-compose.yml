@@ -31,12 +31,14 @@ services:
     volumes:
       - .:/app
       - storage:/upload
+      - ./resources/log:/log
     networks:
       - network
     working_dir: /app
     command: npm run serve
     environment:
       NODE_ENV: development
+      LOG_LEVEL: 5
       PORT: 3000
       SDB_PROTOCOL: redis
       SDB_HOST: session

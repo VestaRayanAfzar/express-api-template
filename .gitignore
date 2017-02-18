@@ -5,4 +5,4 @@ yarn-error*
 /build
 /node_modules
 /resources/tsd
-/src/config/setting.var.ts
+/resources/log
